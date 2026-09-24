@@ -1,0 +1,58 @@
+[project]
+name = "signalscope"
+version = "0.1.0"
+description = "SignalScope UZ: alert escalation prediction + public EDA website"
+requires-python = "==3.11.*"
+dependencies = [
+    "numpy==2.2.6",
+    "pandas==2.3.3",
+    "polars==1.34.0",
+    "pyarrow==21.0.0",
+    "scipy==1.16.2",
+    "statsmodels==0.14.5",
+    "scikit-learn==1.7.2",
+    "lightgbm==4.6.0",
+    "xgboost==3.0.5",
+    "catboost==1.2.8",
+    "optuna==4.5.0",
+    "plotly==6.3.1",
+    "matplotlib==3.10.6",
+    "kaleido==1.1.0",
+    "pyyaml==6.0.3",
+    "jinja2==3.1.6",
+    "nbformat==5.10.4",
+    "nbclient==0.10.2",
+    "nbconvert==7.16.6",
+    "ipykernel==6.30.1",
+    "jupyter-core==5.8.1",
+    "torch==2.8.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==8.4.2",
+    "playwright==1.55.0",
+]
+
+[tool.uv]
+package = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu126" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/signalscope"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = ["slow: long-running tests (notebook execution)"]

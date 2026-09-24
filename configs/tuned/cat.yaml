@@ -1,0 +1,12 @@
+n_trials: 30
+oof_auc_tuning: 0.63724
+params:
+  bagging_temperature: 0.9009065048647944
+  border_count: 128
+  depth: 4
+  iterations: 209
+  l2_leaf_reg: 50.05069385076161
+  learning_rate: 0.06900965861283849
+  random_strength: 0.30867472356706827
+  rsm: 0.05984035344031522
+runtime_s: 1655

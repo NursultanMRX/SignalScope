@@ -1,0 +1,15 @@
+n_trials: 71
+oof_auc_tuning: 0.64476
+params:
+  colsample_bytree: 0.17585404526174037
+  learning_rate: 0.014013613634020712
+  max_depth: 5
+  min_child_samples: 157
+  n_estimators: 724
+  num_leaves: 5
+  reg_alpha: 0.004547905376941999
+  reg_lambda: 21.441913393241975
+  scale_pos_weight: 1.0
+  subsample: 0.6740177830108962
+  subsample_freq: 1
+runtime_s: 2422

@@ -1,0 +1,54 @@
+# SignalScope UZ — single source of truth for paths, seeds, CV, and model params.
+team_id: SSUZ7K            # PLACEHOLDER — replace with the official team id, then `python tasks.py predict notebook package`
+
+seed: 42
+n_jobs: 16                 # fixed thread count => deterministic GBDT results
+
+paths:
+  raw: data/raw
+  processed: data/processed
+  artifacts: artifacts
+  outputs: outputs
+  site: site
+  notebooks: notebooks
+
+files:
+  train_signals: train_signals.csv
+  test_signals: test_signals.csv
+  train_tx: train_transactions.parquet
+  test_tx: test_transactions.parquet
+  sample_submission: sample_submission.csv
+
+leakage:
+  # keep only transactions strictly before signal_sanasi 00:00:00 (signal date is date-only)
+  cutoff: strict
+
+cv:
+  n_splits: 5
+  n_repeats: 3
+  holdout_frac: 0.2        # chronological holdout used only as a CV-trust check
+
+features:
+  windows_days: [1, 3, 7, 14, 30, 60, 90]
+  last_k: 20
+
+submission:
+  id_col: signal_id
+  pred_col: ehtimollik
+  float_format: "%.8f"
+
+feature_set:
+  families: [agg, win, lastk, hist, burst]   # time, pt, shift were neutral/negative in ablation (artifacts/experiments.jsonl)
+  burst_seconds: 300
+  calendar: false                            # month/weekday chi2 p = 0.09 / 0.79 -> no stable calendar effect
+
+tuning:
+  lgb_trials: 80
+  xgb_trials: 80
+  cat_trials: 30
+  timeout_s: 2400                            # per model
+
+final:
+  seeds: [42, 7, 2024, 31337, 1234]
+  refit_rounds_factor: 1.1                   # full-data refit uses 10% more rounds than the 80%-data folds
+  models: [lgb, xgb, cat, lr]
