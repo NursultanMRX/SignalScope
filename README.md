@@ -6,7 +6,7 @@ from the customer's transaction history (synthetic data). Metric: ROC-AUC.
 | Deliverable | Where |
 |---|---|
 | Submission | `outputs/team_<TEAM_ID>.csv` (currently `team_SSUZ7K.csv`) |
-| Public EDA website | see `SITE_URL.txt` (Vercel) |
+| Public EDA website | https://bankmonitoring.vercel.app (also in `SITE_URL.txt`) |
 | Reproducible notebook | `notebooks/team_<TEAM_ID>_reproducible.ipynb` |
 | Packaged deliverables | `final_submission/` (`uv run python tasks.py package`) |
 

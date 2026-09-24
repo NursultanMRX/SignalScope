@@ -1,1 +1,1 @@
-https://bankmonitoring-nationalais-projects.vercel.app
+https://bankmonitoring.vercel.app
