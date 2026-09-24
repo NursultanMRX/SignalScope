@@ -1,0 +1,106 @@
+[
+ {
+  "id": "f01_target",
+  "title_uz": "Maqsad taqsimoti va vaqt bo'yicha ulush",
+  "title_en": "Target balance and rate over time",
+  "caption_uz": "Signallarning 17.2% qismi eskalatsiya qilingan (2,405 / 14,000). Oylik ulush 13.9%–21.2% oralig'ida tebranadi, lekin statistik ahamiyatli trend yo'q (χ² p = 0.09), shuning uchun kalendar belgilar modelga kiritilmadi.",
+  "caption_en": "17.2% of alerts are escalated (2,405 of 14,000). The monthly rate moves between 13.9% and 21.2% but shows no significant pattern (chi-square p = 0.09), so calendar features were left out.",
+  "alt": "Bar chart of class counts and a line chart of monthly escalation rate with a 95% confidence band."
+ },
+ {
+  "id": "f02_history",
+  "title_uz": "Tarix hajmi: eskalatsiya va rad etilganlar",
+  "title_en": "History size: escalated vs dismissed",
+  "caption_uz": "Eskalatsiya qilingan signallarda tranzaksiyalar biroz ko'proq (median 453 vs 417; Cliff δ = 0.062, p < 0.001) — farq kichik. Deyarli barcha tarixlar signalgacha ~180 kunni qamraydi.",
+  "caption_en": "Escalated alerts have slightly more transactions (median 453 vs 417; Cliff's delta = 0.062, p < 0.001) — a small effect. Almost every history covers ~180 days before the alert.",
+  "alt": "Overlaid histograms of transaction count and history length for escalated and dismissed alerts."
+ },
+ {
+  "id": "f03_event_time",
+  "title_uz": "Signalgacha faollik (hodisa vaqti)",
+  "title_en": "Activity aligned to the alert (event time)",
+  "caption_uz": "Kunlik faollik (oxirgi 3 daqiqalik portlash bundan mustasno) eskalatsiya qilinganlarda butun oyna bo'ylab ~6% yuqori; egri chiziqlar shakli bir xil. Ya'ni signal oldidan maxsus 'sakrash' yo'q — farq doimiy faollik darajasida.",
+  "caption_en": "Daily activity (excluding the 3-minute burst) is ~6% higher for escalated alerts across the whole window, with the same shape. There is no special pre-alert spike: the difference is a steady level shift.",
+  "alt": "Line chart of mean daily transactions per alert over the 180 days before the alert, with 95% bands."
+ },
+ {
+  "id": "f04_burst",
+  "title_uz": "Signal oldidan 3 daqiqalik 'portlash'",
+  "title_en": "The 3-minute pre-alert burst",
+  "caption_uz": "Tranzaksiyalarning 7.9% qismi signal sanasidan oldingi kechaning 23:57–23:59 oralig'iga to'plangan (signallarning 98.9% qismida, median 31 ta). Bu sintetik generator artefakti; alohida belgilar sifatida ishlatildi (OOF AUC +0.007), lekin o'zi zaif (Cliff δ = 0.025).",
+  "caption_en": "7.9% of all transactions are stamped 23:57–23:59 on the evening before the alert date (98.9% of alerts, median 31 each). This is a generator artefact; we summarise it as separate features (+0.007 OOF AUC) but it is weak on its own (Cliff's delta = 0.025).",
+  "alt": "Histogram of burst timestamps in the last 3 minutes and overlaid histograms of burst size by class."
+ },
+ {
+  "id": "f05_direction",
+  "title_uz": "Kirim va chiqim",
+  "title_en": "Incoming vs outgoing",
+  "caption_uz": "Kirim tranzaksiyalar ~76% ni tashkil etadi. Eskalatsiya qilinganlarda kirim ulushi deyarli bir xil (Cliff δ = -0.025), sof oqim bo'yicha farq ham kichik (δ = -0.020): yo'nalish yolg'iz o'zi kuchli signal emas.",
+  "caption_en": "About 76% of transactions are incoming. The incoming share is nearly identical across classes (Cliff's delta = -0.025) and net flow differs only slightly (delta = -0.020): direction alone is not a strong signal.",
+  "alt": "Box plots of incoming share and normalised net flow by class."
+ },
+ {
+  "id": "f06_types",
+  "title_uz": "Tranzaksiya turlari",
+  "title_en": "Transaction types",
+  "caption_uz": "Tur tarkibi sinflar orasida deyarli bir xil (tranzaksiya darajasida Cramér V = 0.004). Issiqlik xaritasi eskalatsiya qilinganlardagi ulushning rad etilganlarga nisbatini ko'rsatadi: bank o'tkazmasi chiqimlari bir oz ko'proq, lekin farqlar ±5% atrofida.",
+  "caption_en": "The type mix is almost identical between classes (transaction-level Cramér's V = 0.004). The heatmap shows the share among escalated divided by the share among dismissed: differences stay within about ±5%.",
+  "alt": "Grouped bar chart of transaction type shares by class and a heatmap of type-by-direction lift."
+ },
+ {
+  "id": "f07_amount_ratio",
+  "title_uz": "Miqdor taqsimoti: eskalatsiya ÷ rad",
+  "title_en": "Amount distribution: escalated ÷ dismissed",
+  "caption_uz": "Eng aniq naqsh: eskalatsiya qilinganlarda kichik bank o'tkazmalari ko'proq, kattalari esa kamroq (bank o'tkazmasi o'rtacha miqdori median 0.06 vs 0.21; Cliff δ = -0.131, p < 0.001). Bu 'bo'lib-bo'lib o'tkazish' ga o'xshash xulq bo'lishi mumkin, ammo aniq chegara oldida to'planish topilmadi.",
+  "caption_en": "Clearest pattern: escalated alerts have relatively more small bank transfers and fewer large ones (per-alert mean transfer amount, median 0.06 vs 0.21; Cliff's delta = -0.131, p < 0.001). This resembles splitting payments, but no bunching just below a threshold was found (smurfing test, arXiv 2309.12704).",
+  "alt": "Line chart of the escalated-to-dismissed density ratio across amount bins for card, transfer and cash."
+ },
+ {
+  "id": "f08_amount_types",
+  "title_uz": "Tur bo'yicha miqdor",
+  "title_en": "Amount by type",
+  "caption_uz": "Miqdor turlar bo'yicha keskin farq qiladi: xalqaro > naqd > bank o'tkazmasi > karta. Shu sababli miqdor belgilari har bir tur ichida alohida (va tur × yo'nalish bo'yicha) hisoblandi.",
+  "caption_en": "Amount level differs sharply by type: international > cash > transfer > card. Amount features are therefore computed within each type (and type × direction), not only overall.",
+  "alt": "Grouped box plots of amount quantiles by transaction type and class."
+ },
+ {
+  "id": "f09_windows",
+  "title_uz": "Signal oldidagi oynalar",
+  "title_en": "Pre-alert windows vs baseline",
+  "caption_uz": "Signal oldidan oxirgi kunlarda faollik tarixiy o'rtachadan past (egri chiziqlar 1 dan past), chunki faollik ~130 kun oldin eng yuqori bo'lgan. Ikkala sinfda shakl bir xil; farqlar juda kichik (eng katta |δ| = 0.021).",
+  "caption_en": "In the last days before the alert activity is below the history average (curves under 1), because activity peaks ~130 days earlier. The shape is the same for both classes; differences are tiny (largest |delta| = 0.021).",
+  "alt": "Line chart of median window-to-history activity ratio for 1 to 90 day windows by class."
+ },
+ {
+  "id": "f10_time_of_day",
+  "title_uz": "Kun soati va hafta kuni",
+  "title_en": "Hour of day and weekday",
+  "caption_uz": "Tarixiy tranzaksiyalar soatlar bo'yicha deyarli tekis taqsimlangan (sintetik ma'lumot); 23-soatdagi cho'qqi butunlay 3 daqiqalik portlash hisobiga. Hafta kunlari ham ikki sinfda bir xil — tungi/dam olish belgilari ablatsiyada foyda bermadi.",
+  "caption_en": "Historical transactions are almost uniform over the hours (synthetic data); the 23:00 spike is entirely the 3-minute burst. Weekday shares are also the same for both classes — night/weekend features did not help in ablation.",
+  "alt": "Stacked bar chart of transactions per hour split into history and burst, and weekday share by class."
+ },
+ {
+  "id": "f11_univariate",
+  "title_uz": "Belgilar kuchi (bir o'zgaruvchili)",
+  "title_en": "Feature strength (univariate)",
+  "caption_uz": "Birorta belgi 0.58 AUC dan oshmaydi (eng kuchlisi bank_otkazmasi_chiqim_mean = 0.574); 26 ta belgi 0.55 dan yuqori. Signal ko'p kuchsiz, o'zaro bog'liq belgilarga tarqalgan — shu sabab kuchli regulyarizatsiyali GBDT va ansambl tanlandi. To'q sariq = eskalatsiya bilan musbat.",
+  "caption_en": "No single feature exceeds 0.58 AUC (strongest: bank_otkazmasi_chiqim_mean = 0.574); 26 features exceed 0.55. The signal is spread over many weak, correlated features — hence heavily regularised GBDTs and an ensemble. Orange = positively associated with escalation.",
+  "alt": "Horizontal bar chart of univariate AUC for the top 25 features and a Spearman correlation heatmap."
+ },
+ {
+  "id": "f12_drift",
+  "title_uz": "Train va test taqsimoti",
+  "title_en": "Train vs test distributions",
+  "caption_uz": "Train va test bir xil taqsimotdan: adversarial validatsiya AUC = 0.502 (0.5 = farqlab bo'lmaydi), top-25 belgilar bo'yicha maksimal KS = 0.022. Sanalar oralig'i ham bir xil (2025-01-01 … 2026-12-31) → tasodifiy bo'linish, stratifikatsiyalangan K-fold CV.",
+  "caption_en": "Train and test come from the same distribution: adversarial validation AUC = 0.502 (0.5 = indistinguishable), max KS over the top-25 features = 0.022. Date ranges are identical (2025-01-01 … 2026-12-31) → random split, so stratified K-fold CV is appropriate.",
+  "alt": "Four overlaid histograms comparing train and test distributions of the strongest features."
+ },
+ {
+  "id": "f13_ablation",
+  "title_uz": "Belgi oilalari hissasi (ablatsiya)",
+  "title_en": "Feature-family contribution (ablation)",
+  "caption_uz": "Har bir belgi oilasi olib tashlanganda OOF AUC qancha tushadi (LightGBM, 5×2 CV). Agregatlar asosiy hissa qo'shadi; oxirgi 20 tranzaksiya va portlash belgilari ham foydali; vaqt naqshlari va pass-through foyda bermadi va yakuniy to'plamdan chiqarildi.",
+  "caption_en": "How much OOF AUC drops when each feature family is removed (LightGBM, 5×2 CV). Aggregates carry most of the signal; the last-20-transactions and burst families also help; time-pattern and pass-through families did not help and were dropped from the final set.",
+  "alt": "Horizontal bar chart of AUC lost when each feature family is removed."
+ }
+]

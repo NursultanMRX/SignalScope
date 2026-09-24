@@ -1,0 +1,47 @@
+{
+ "submission": "outputs\\team_SSUZ7K.csv",
+ "sha256": "96e74eefe3d9df9fc68ba86f165b9a7bbd43cefe357c7cd80e1c96ca239801ae",
+ "weights": {
+  "lgb": 1.0
+ },
+ "validator": {
+  "rows": 6000,
+  "unique_ratio": 0.99883,
+  "mean": 0.5,
+  "quantiles": [
+   0.00017,
+   0.10013,
+   0.25008,
+   0.5,
+   0.74992,
+   0.89987,
+   0.99983
+  ],
+  "ks_vs_oof_rank": 0.0003,
+  "status": "PASS"
+ },
+ "seed": 42,
+ "final_seeds": [
+  42,
+  7,
+  2024,
+  31337,
+  1234
+ ],
+ "git_commit": null,
+ "python": "3.11.9",
+ "platform": "Windows-10-10.0.26200-SP0",
+ "packages": {
+  "numpy": "2.2.6",
+  "pandas": "2.3.3",
+  "polars": "1.34.0",
+  "pyarrow": "21.0.0",
+  "scikit-learn": "1.7.2",
+  "lightgbm": "4.6.0",
+  "xgboost": "3.0.5",
+  "catboost": "1.2.8",
+  "scipy": "1.16.2",
+  "optuna": "4.5.0",
+  "torch": "2.8.0+cu126"
+ }
+}

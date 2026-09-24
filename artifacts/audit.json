@@ -1,0 +1,400 @@
+{
+  "signals_train": {
+    "rows": 14000,
+    "columns": [
+      "signal_id",
+      "signal_sanasi",
+      "eskalatsiya"
+    ],
+    "nulls": {
+      "signal_id": 0,
+      "signal_sanasi": 0,
+      "eskalatsiya": 0
+    },
+    "dup_signal_id": 0,
+    "id_pattern_ok": true,
+    "date_min": "2025-01-01",
+    "date_max": "2026-12-31"
+  },
+  "signals_test": {
+    "rows": 6000,
+    "columns": [
+      "signal_id",
+      "signal_sanasi"
+    ],
+    "nulls": {
+      "signal_id": 0,
+      "signal_sanasi": 0
+    },
+    "dup_signal_id": 0,
+    "id_pattern_ok": true,
+    "date_min": "2025-01-01",
+    "date_max": "2026-12-31"
+  },
+  "train_test_id_overlap": 0,
+  "sample_submission": {
+    "columns": [
+      "signal_id",
+      "ehtimollik"
+    ],
+    "rows": 6000,
+    "same_ids_as_test": true,
+    "same_order_as_test": true
+  },
+  "target": {
+    "values": [
+      0,
+      1
+    ],
+    "rate": 0.17179,
+    "n_pos": 2405,
+    "n_neg": 11595,
+    "by_month": {
+      "2025-01": [
+        0.1703,
+        505
+      ],
+      "2025-02": [
+        0.1857,
+        517
+      ],
+      "2025-03": [
+        0.1762,
+        505
+      ],
+      "2025-04": [
+        0.2,
+        470
+      ],
+      "2025-05": [
+        0.1652,
+        466
+      ],
+      "2025-06": [
+        0.1429,
+        497
+      ],
+      "2025-07": [
+        0.1635,
+        746
+      ],
+      "2025-08": [
+        0.1701,
+        735
+      ],
+      "2025-09": [
+        0.1394,
+        696
+      ],
+      "2025-10": [
+        0.1717,
+        856
+      ],
+      "2025-11": [
+        0.1544,
+        790
+      ],
+      "2025-12": [
+        0.1752,
+        805
+      ],
+      "2026-01": [
+        0.1643,
+        767
+      ],
+      "2026-02": [
+        0.1605,
+        704
+      ],
+      "2026-03": [
+        0.1992,
+        778
+      ],
+      "2026-04": [
+        0.2122,
+        608
+      ],
+      "2026-05": [
+        0.1701,
+        635
+      ],
+      "2026-06": [
+        0.1435,
+        634
+      ],
+      "2026-07": [
+        0.1756,
+        427
+      ],
+      "2026-08": [
+        0.179,
+        419
+      ],
+      "2026-09": [
+        0.1747,
+        395
+      ],
+      "2026-10": [
+        0.1751,
+        337
+      ],
+      "2026-11": [
+        0.1994,
+        331
+      ],
+      "2026-12": [
+        0.191,
+        377
+      ]
+    },
+    "month_chi2_p": 0.09384209872814407,
+    "weekday_chi2_p": 0.7947449369857913,
+    "signal_id_order_auc": 0.4985,
+    "signal_date_auc": 0.5076
+  },
+  "tx_train": {
+    "rows": 6987663,
+    "dtypes": {
+      "signal_id": "object",
+      "tranzaksiya_vaqti": "datetime64[us]",
+      "kirim_chiqim": "object",
+      "tranzaksiya_turi": "object",
+      "miqdor_indeksi": "float64"
+    },
+    "nulls": {
+      "signal_id": 0,
+      "tranzaksiya_vaqti": 0,
+      "kirim_chiqim": 0,
+      "tranzaksiya_turi": 0,
+      "miqdor_indeksi": 0
+    },
+    "dup_rows_exact": 0,
+    "ts_min": "2024-07-05 00:31:36",
+    "ts_max": "2026-12-31 00:00:00",
+    "tz": "None",
+    "orphan_tx_rows": 0,
+    "signals_without_tx": 0,
+    "post_signal_rows": 3934,
+    "post_signal_signals": 2620,
+    "post_signal_max_hours_after": 24.0,
+    "at_or_after_midnight_exact": 3094,
+    "age_days_max": 180.0,
+    "kirim_chiqim": {
+      "kirim": 5286880,
+      "chiqim": 1700783
+    },
+    "tranzaksiya_turi": {
+      "karta": 3758797,
+      "bank_otkazmasi": 2754687,
+      "naqd": 442346,
+      "xalqaro": 31833
+    },
+    "miqdor": {
+      "mean": -0.1334,
+      "std": 0.9811,
+      "q0": -2.9123,
+      "q1": -2.1177,
+      "q5": -1.5419,
+      "q25": -0.7994,
+      "q50": -0.2442,
+      "q75": 0.4302,
+      "q95": 1.6406,
+      "q99": 2.639,
+      "q100": 6.6917,
+      "skew": 0.6328,
+      "kurt": 0.9806,
+      "n_negative": 4214712,
+      "n_zero": 0,
+      "n_gt_4": 6343,
+      "n_unique": 6987522
+    },
+    "tx_per_signal": {
+      "mean": 499.1188,
+      "std": 299.4654,
+      "q0": 1.0,
+      "q1": 2.99,
+      "q5": 78.0,
+      "q25": 277.0,
+      "q50": 461.0,
+      "q75": 678.25,
+      "q95": 1048.05,
+      "q99": 1350.03,
+      "q100": 2279.0
+    },
+    "history_span_days": {
+      "mean": 175.5072,
+      "std": 21.155,
+      "q0": 0.0,
+      "q1": 4.9073,
+      "q5": 169.6848,
+      "q25": 178.7095,
+      "q50": 179.4548,
+      "q75": 179.8447,
+      "q95": 179.9764,
+      "q99": 179.9956,
+      "q100": 180.0
+    },
+    "hour_dist": {
+      "0": 271707,
+      "1": 268705,
+      "2": 268016,
+      "3": 268732,
+      "4": 269100,
+      "5": 268872,
+      "6": 267753,
+      "7": 267817,
+      "8": 268287,
+      "9": 267983,
+      "10": 268867,
+      "11": 267480,
+      "12": 268094,
+      "13": 268174,
+      "14": 270918,
+      "15": 267517,
+      "16": 268046,
+      "17": 267764,
+      "18": 267091,
+      "19": 267289,
+      "20": 267407,
+      "21": 267593,
+      "22": 267484,
+      "23": 816967
+    }
+  },
+  "tx_test": {
+    "rows": 3027575,
+    "dtypes": {
+      "signal_id": "object",
+      "tranzaksiya_vaqti": "datetime64[us]",
+      "kirim_chiqim": "object",
+      "tranzaksiya_turi": "object",
+      "miqdor_indeksi": "float64"
+    },
+    "nulls": {
+      "signal_id": 0,
+      "tranzaksiya_vaqti": 0,
+      "kirim_chiqim": 0,
+      "tranzaksiya_turi": 0,
+      "miqdor_indeksi": 0
+    },
+    "dup_rows_exact": 0,
+    "ts_min": "2024-07-05 00:42:26",
+    "ts_max": "2026-12-31 00:00:00",
+    "tz": "None",
+    "orphan_tx_rows": 0,
+    "signals_without_tx": 0,
+    "post_signal_rows": 1456,
+    "post_signal_signals": 1163,
+    "post_signal_max_hours_after": 24.0,
+    "at_or_after_midnight_exact": 1405,
+    "age_days_max": 180.0,
+    "kirim_chiqim": {
+      "kirim": 2286817,
+      "chiqim": 740758
+    },
+    "tranzaksiya_turi": {
+      "karta": 1624989,
+      "bank_otkazmasi": 1197350,
+      "naqd": 191522,
+      "xalqaro": 13714
+    },
+    "miqdor": {
+      "mean": -0.1219,
+      "std": 0.987,
+      "q0": -2.9123,
+      "q1": -2.119,
+      "q5": -1.5409,
+      "q25": -0.7912,
+      "q50": -0.2332,
+      "q75": 0.4456,
+      "q95": 1.6628,
+      "q99": 2.6696,
+      "q100": 6.6917,
+      "skew": 0.63,
+      "kurt": 0.9749,
+      "n_negative": 1811543,
+      "n_zero": 0,
+      "n_gt_4": 2853,
+      "n_unique": 3027494
+    },
+    "tx_per_signal": {
+      "mean": 504.5958,
+      "std": 299.4086,
+      "q0": 1.0,
+      "q1": 3.99,
+      "q5": 81.95,
+      "q25": 287.0,
+      "q50": 460.5,
+      "q75": 681.25,
+      "q95": 1055.05,
+      "q99": 1361.03,
+      "q100": 1985.0
+    },
+    "history_span_days": {
+      "mean": 175.6792,
+      "std": 20.8552,
+      "q0": 0.0001,
+      "q1": 6.4759,
+      "q5": 171.3251,
+      "q25": 178.7148,
+      "q50": 179.444,
+      "q75": 179.8459,
+      "q95": 179.977,
+      "q99": 179.9959,
+      "q100": 180.0
+    },
+    "hour_dist": {
+      "0": 118086,
+      "1": 116444,
+      "2": 116324,
+      "3": 116414,
+      "4": 116024,
+      "5": 116304,
+      "6": 117112,
+      "7": 115708,
+      "8": 116603,
+      "9": 116316,
+      "10": 116642,
+      "11": 115999,
+      "12": 116573,
+      "13": 117138,
+      "14": 117320,
+      "15": 116091,
+      "16": 115156,
+      "17": 116141,
+      "18": 115464,
+      "19": 115740,
+      "20": 116217,
+      "21": 116005,
+      "22": 115677,
+      "23": 352077
+    }
+  },
+  "unseen_categories_in_test": [],
+  "drift_ks": {
+    "n_tx": 0.3163,
+    "amt_mean": 0.1929,
+    "amt_std": 0.6352,
+    "amt_max": 0.0648,
+    "in_share": 0.6334,
+    "naqd_share": 0.9315,
+    "xalqaro_share": 0.2808,
+    "karta_share": 0.7543,
+    "first_age": 0.8076,
+    "last_age": 0.0937,
+    "n_7d": 0.2257,
+    "n_30d": 0.4824,
+    "hour_mean": 0.8327
+  },
+  "adversarial_validation": {
+    "auc": 0.5023,
+    "top_features": {
+      "amt_std": 4016.0,
+      "first_age": 3988.0,
+      "hour_mean": 3980.0,
+      "in_share": 3904.0,
+      "naqd_share": 3862.0
+    }
+  },
+  "adversarial_signal_date_auc": 0.4999
+}

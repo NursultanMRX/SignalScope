@@ -1,0 +1,191 @@
+{
+ "target": {
+  "n": 14000,
+  "n_pos": 2405,
+  "n_neg": 11595,
+  "rate": 0.1718,
+  "month_chi2": 32.31,
+  "month_chi2_p": 0.0938,
+  "month_rate_min": 0.1394,
+  "month_rate_max": 0.2122
+ },
+ "n_tx": {
+  "p": 1.3487921731330782e-06,
+  "cliffs_delta": 0.0625,
+  "auc": 0.5313,
+  "median_dismissed": 417.0,
+  "median_escalated": 453.0
+ },
+ "first_age": {
+  "p": 0.03772131182280921,
+  "cliffs_delta": 0.027,
+  "auc": 0.5135,
+  "median_dismissed": 179.4548,
+  "median_escalated": 179.5096
+ },
+ "event_time": {
+  "escalated_to_dismissed_volume_ratio": 1.0621,
+  "daily_mean_last30_dismissed": 1.291,
+  "daily_mean_last30_escalated": 1.353,
+  "peak_day_before": 132
+ },
+ "burst": {
+  "share_of_rows": 0.0786,
+  "signals_with_burst": 0.9888,
+  "median_per_alert": 31.0,
+  "max_seconds_before": 293.0,
+  "b_n_p": 0.05021259676936016,
+  "b_n_cliffs_delta": 0.0253,
+  "b_n_auc": 0.5127,
+  "b_n_median_dismissed": 30.0,
+  "b_n_median_escalated": 32.0
+ },
+ "in_share": {
+  "p": 0.050525939164617256,
+  "cliffs_delta": -0.0254,
+  "auc": 0.4873,
+  "median_dismissed": 0.7488,
+  "median_escalated": 0.7442
+ },
+ "net_flow_norm": {
+  "p": 0.12588167736724024,
+  "cliffs_delta": -0.0199,
+  "auc": 0.4901,
+  "median_dismissed": 0.3757,
+  "median_escalated": 0.3665
+ },
+ "in_out_amtx_ratio": {
+  "p": 0.1259059404512086,
+  "cliffs_delta": -0.0199,
+  "auc": 0.4901,
+  "median_dismissed": 2.2036,
+  "median_escalated": 2.157
+ },
+ "type_mix": {
+  "chi2_p": 4.408365822101007e-17,
+  "cramers_v_tx_level": 0.0035,
+  "share_dismissed": {
+   "karta": 0.5324,
+   "bank_otkazmasi": 0.4007,
+   "naqd": 0.0625,
+   "xalqaro": 0.0044
+  },
+  "share_escalated": {
+   "karta": 0.5316,
+   "bank_otkazmasi": 0.3991,
+   "naqd": 0.0646,
+   "xalqaro": 0.0046
+  },
+  "lift": {
+   "karta|chiqim": 1.017,
+   "karta|kirim": 0.993,
+   "bank_otkazmasi|chiqim": 1.013,
+   "bank_otkazmasi|kirim": 0.99,
+   "naqd|chiqim": 1.053,
+   "naqd|kirim": 1.027,
+   "xalqaro|chiqim": 1.086,
+   "xalqaro|kirim": 1.028
+  }
+ },
+ "amount_by_type": {
+  "karta": {
+   "p": 0.001925011547961553,
+   "cliffs_delta": -0.0403,
+   "auc": 0.4799,
+   "median_dismissed": -0.3128,
+   "median_escalated": -0.3424
+  },
+  "bank_otkazmasi": {
+   "p": 6.95389357383954e-24,
+   "cliffs_delta": -0.1309,
+   "auc": 0.4345,
+   "median_dismissed": 0.206,
+   "median_escalated": 0.0641
+  },
+  "naqd": {
+   "p": 0.8672012586156953,
+   "cliffs_delta": -0.0022,
+   "auc": 0.4989,
+   "median_dismissed": 0.6387,
+   "median_escalated": 0.6416
+  }
+ },
+ "windows_rate_vs_hist": {
+  "1": {
+   "p": 0.08412850053254647,
+   "cliffs_delta": 0.0212,
+   "auc": 0.5106,
+   "median_dismissed": 0.2024,
+   "median_escalated": 0.2457
+  },
+  "3": {
+   "p": 0.8980074646466919,
+   "cliffs_delta": 0.0017,
+   "auc": 0.5008,
+   "median_dismissed": 0.3154,
+   "median_escalated": 0.3183
+  },
+  "7": {
+   "p": 0.8479609358317945,
+   "cliffs_delta": 0.0025,
+   "auc": 0.5012,
+   "median_dismissed": 0.3518,
+   "median_escalated": 0.3518
+  },
+  "14": {
+   "p": 0.4035351204653862,
+   "cliffs_delta": -0.0108,
+   "auc": 0.4946,
+   "median_dismissed": 0.3853,
+   "median_escalated": 0.3861
+  },
+  "30": {
+   "p": 0.7161174899126764,
+   "cliffs_delta": -0.0047,
+   "auc": 0.4976,
+   "median_dismissed": 0.4515,
+   "median_escalated": 0.4531
+  },
+  "60": {
+   "p": 0.9151677852433314,
+   "cliffs_delta": -0.0014,
+   "auc": 0.4993,
+   "median_dismissed": 0.5812,
+   "median_escalated": 0.5769
+  },
+  "90": {
+   "p": 0.8842756479583748,
+   "cliffs_delta": 0.0019,
+   "auc": 0.5009,
+   "median_dismissed": 0.712,
+   "median_escalated": 0.7079
+  }
+ },
+ "night_share": {},
+ "univariate_top10": {
+  "bank_otkazmasi_chiqim_mean": 0.4258,
+  "bank_otkazmasi_bin7_frac": 0.4324,
+  "bank_otkazmasi_mean": 0.4345,
+  "bank_otkazmasi_med": 0.436,
+  "bank_otkazmasi_kirim_bin7_frac": 0.4371,
+  "bank_otkazmasi_kirim_mean": 0.4387,
+  "bank_otkazmasi_max": 0.4407,
+  "bank_otkazmasi_chiqim_bin7_frac": 0.4409,
+  "bank_otkazmasi_std": 0.441,
+  "bank_otkazmasi_chiqim_max": 0.441
+ },
+ "univariate_n_over_055": 26,
+ "drift": {
+  "ks_max_top25": 0.0219,
+  "adversarial_auc": 0.5023
+ },
+ "ablation_delta_auc": {
+  "Agregatlar / aggregates": 0.0262,
+  "Oxirgi 20 tx / last-20 tx": 0.006,
+  "Oynalar / windows": 0.0021,
+  "Miqdor gistogrammasi / amount histogram": 0.0014,
+  "Portlash / burst": 0.0068,
+  "Vaqt naqshlari / time patterns": -0.0003,
+  "Pass-through": -0.0019
+ }
+}

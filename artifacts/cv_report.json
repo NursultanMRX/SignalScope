@@ -1,0 +1,57 @@
+{
+ "models": {
+  "lgb": {
+   "fold_auc_mean": 0.64787,
+   "fold_auc_std": 0.01253,
+   "oof_auc_mean_over_repeats": 0.64761,
+   "oof_auc_of_mean_pred": 0.64996,
+   "n_folds": 15,
+   "repeats": 3,
+   "runtime_s": 41.4
+  },
+  "xgb": {
+   "fold_auc_mean": 0.64768,
+   "fold_auc_std": 0.01228,
+   "oof_auc_mean_over_repeats": 0.64737,
+   "oof_auc_of_mean_pred": 0.64952,
+   "n_folds": 15,
+   "repeats": 3,
+   "runtime_s": 243.1
+  },
+  "cat": {
+   "fold_auc_mean": 0.64088,
+   "fold_auc_std": 0.01138,
+   "oof_auc_mean_over_repeats": 0.64066,
+   "oof_auc_of_mean_pred": 0.64599,
+   "n_folds": 15,
+   "repeats": 3,
+   "runtime_s": 59.7
+  },
+  "lr": {
+   "fold_auc_mean": 0.61281,
+   "fold_auc_std": 0.01263,
+   "oof_auc_mean_over_repeats": 0.61278,
+   "oof_auc_of_mean_pred": 0.61695,
+   "n_folds": 15,
+   "repeats": 3,
+   "runtime_s": 138.3
+  }
+ },
+ "blend": {
+  "weights": {
+   "cat": 0.286,
+   "lgb": 0.2862,
+   "lr": 0.1421,
+   "xgb": 0.2857
+  },
+  "oof_auc": 0.65005,
+  "foldwise": {
+   "fitted": 0.64987,
+   "equal": 0.64943,
+   "single_cat": 0.64597,
+   "single_lgb": 0.65002,
+   "single_lr": 0.61718,
+   "single_xgb": 0.64948
+  }
+ }
+}
