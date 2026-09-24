@@ -1,5 +1,5 @@
 {
- "submission": "outputs\\team_SSUZ7K.csv",
+ "submission": "outputs/team_SSUZ7K.csv",
  "sha256": "96e74eefe3d9df9fc68ba86f165b9a7bbd43cefe357c7cd80e1c96ca239801ae",
  "weights": {
   "lgb": 1.0

@@ -276,8 +276,7 @@ def main() -> None:
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#2a78d6"/>'
         '<path d="M6 22 L12 14 L17 18 L26 8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" '
         'stroke-linejoin="round"/><circle cx="26" cy="8" r="3" fill="#eb6834"/></svg>', encoding="utf-8")
-    (out / "vercel.json").write_text(json.dumps({"cleanUrls": True, "headers": [
-        {"source": "/data/(.*)", "headers": [{"key": "Cache-Control", "value": "public, max-age=3600"}]}]}, indent=1))
+    # Vercel config lives in the repo-root vercel.json (outputDirectory: site), not in site/.
     # privacy guard: no signal ids or raw transaction rows may leak into the site
     blob = "".join(p.read_text(encoding="utf-8", errors="ignore") for p in out.rglob("*") if p.suffix in
                    {".html", ".json", ".js", ".css"})

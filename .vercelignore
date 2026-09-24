@@ -1,0 +1,4 @@
+# Vercel only serves the prebuilt static site/ (see vercel.json); skip everything else on upload.
+/*
+!/site
+!/vercel.json

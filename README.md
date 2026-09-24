@@ -42,6 +42,12 @@ separate stage (`tasks.py tune`, ~40 min). Runtime of `all` on a 32-thread CPU: 
 
 Changing the team id: edit `team_id` in `configs/config.yaml`, then `uv run python tasks.py predict notebook site package`.
 
+## Website deployment (Vercel)
+The site is plain static HTML prebuilt into `site/` by `uv run python tasks.py site` and committed. The repo-root
+`vercel.json` tells Vercel to skip any install/build (no Python runtime) and serve `site/` as the output directory;
+`.vercelignore` keeps the upload to `site/` only. Pushing to `main` redeploys production. After rebuilding the site,
+commit `site/` so the deployment picks it up.
+
 ## How it works
 1. **Audit** (`src/signalscope/audit.py`): schema, duplicates, orphans, post-alert transactions, adversarial validation.
 2. **Features** (`src/signalscope/features/`): one row per alert from transactions strictly before `signal_sanasi`

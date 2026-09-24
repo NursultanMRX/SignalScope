@@ -62,7 +62,7 @@ def main() -> None:
         commit = None
     pkgs = ["numpy", "pandas", "polars", "pyarrow", "scikit-learn", "lightgbm", "xgboost", "catboost", "scipy",
             "optuna", "torch"]
-    manifest = {"submission": str(f.relative_to(f.parents[1])), "sha256": sha, "weights": w,
+    manifest = {"submission": f.relative_to(f.parents[1]).as_posix(), "sha256": sha, "weights": w,
                 "validator": rep, "raw_oof_vs_test_ks": raw_ks, "seed": cfg["seed"], "final_seeds": cfg["final"]["seeds"], "git_commit": commit,
                 "python": platform.python_version(), "platform": platform.platform(),
                 "packages": {p: version(p) for p in pkgs}}
