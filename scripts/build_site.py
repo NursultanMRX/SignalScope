@@ -85,7 +85,7 @@ def main() -> None:
 
     m_lgb = cv["models"]["lgb"]
     w = manifest["weights"]
-    headline = cv["blend"]["oof_auc"] if len(w) > 1 else m_lgb["oof_auc_of_mean_pred"]
+    headline = cv["blend"]["oof_auc"] if len(w) > 1 else cv["models"][next(iter(w))]["oof_auc_of_mean_pred"]
     m = {"headline": f"{headline:.3f}", "fold_mean": f"{m_lgb['fold_auc_mean']:.3f}",
          "fold_std": f"{m_lgb['fold_auc_std']:.3f}"}
     tr, te = audit["tx_train"], audit["tx_test"]

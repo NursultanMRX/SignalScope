@@ -41,6 +41,12 @@ def main() -> None:
         assert (te.signal_id.values == s_te.signal_id.values).all()
         score += wk * rankdata(te["pred"].to_numpy()) / len(te)
         oof += wk * rankdata(pd.read_parquet(art / f"oof_{k}.parquet")["oof"].to_numpy()) / len(oof)
+    # raw-score drift check (before rank mapping): test predictions should look like OOF predictions
+    from scipy.stats import ks_2samp
+    raw_ks = {k: round(float(ks_2samp(pd.read_parquet(art / f"oof_{k}.parquet")["oof"],
+                                     pd.read_parquet(art / f"test_{k}.parquet")["pred"]).statistic), 4) for k in w}
+    print("raw OOF vs test KS:", raw_ks)
+    assert max(raw_ks.values()) < 0.1, "test score distribution differs from OOF distribution"
     final = rankdata(score, method="average") / (len(score) + 1)   # monotone -> (0,1), keeps ranking
     sub = pd.DataFrame({"signal_id": s_te["signal_id"].astype(str), "ehtimollik": final})
     f = out / f"team_{cfg['team_id']}.csv"
@@ -57,7 +63,7 @@ def main() -> None:
     pkgs = ["numpy", "pandas", "polars", "pyarrow", "scikit-learn", "lightgbm", "xgboost", "catboost", "scipy",
             "optuna", "torch"]
     manifest = {"submission": str(f.relative_to(f.parents[1])), "sha256": sha, "weights": w,
-                "validator": rep, "seed": cfg["seed"], "final_seeds": cfg["final"]["seeds"], "git_commit": commit,
+                "validator": rep, "raw_oof_vs_test_ks": raw_ks, "seed": cfg["seed"], "final_seeds": cfg["final"]["seeds"], "git_commit": commit,
                 "python": platform.python_version(), "platform": platform.platform(),
                 "packages": {p: version(p) for p in pkgs}}
     (art / "run_manifest.json").write_text(json.dumps(manifest, indent=1), encoding="utf-8")
