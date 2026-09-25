@@ -53,7 +53,7 @@
 <a class="skip" href="#main"><span lang="uz">Matnga o'tish</span><span lang="en">Skip to text</span></a>
 <header class="top">
   <div class="top-in">
-    <b>{{ team_name }}</b>
+    <b>{{ team_name }} <span class="tid">· {{ team_id }}</span></b>
     <nav aria-label="Sections">
       <a href="#overview"><span lang="uz">Umumiy</span><span lang="en">Overview</span></a>
       <a href="#data"><span lang="uz">Ma'lumot</span><span lang="en">Dataset</span></a>
@@ -74,6 +74,7 @@
 <section id="overview" class="hero">
   <p class="eyebrow"><span lang="uz">Moliyaviy monitoring xakatoni · FinTech / AI</span><span lang="en">Financial monitoring hackathon · FinTech / AI</span></p>
   <h1>{{ team_name }} <span class="dash">—</span> Financial Alert Intelligence</h1>
+  <p class="team-badge"><span lang="uz">Jamoa ID</span><span lang="en">Team ID</span> <b>{{ team_id }}</b></p>
   <p class="sub"><span lang="uz">Moliyaviy signallar eskalatsiyasini machine learning yordamida bashorat qilish.</span><span lang="en">Predicting financial alert escalation through machine learning.</span></p>
   <p class="text"><span lang="uz">Monitoring bo'limiga mijozlarning tranzaksiya tarixidan avtomatik signallar keladi. Mutaxassis har birini yo rad etadi, yo eskalatsiya qiladi. Maqsadimiz: yashirin test to'plamidagi har bir signal uchun eskalatsiya ehtimolini berish (baholash: ROC-AUC).</span><span lang="en">Automatic alerts are raised from customers' transaction histories, and a specialist either dismisses or escalates each one. Our goal: give every alert in the hidden test set a probability of escalation (scored by ROC-AUC).</span></p>
   <div class="result" role="group" aria-label="Final result">
@@ -291,6 +292,6 @@ uv run python tasks.py all      # audit → features → eda → train → predi
   {% if repo_url %}<br><a href="{{ repo_url }}">{{ repo_url }}</a>{% endif %}</p>
 </section>
 </main>
-<footer>{{ team_name }} · Financial Alert Intelligence · {{ build_date }}</footer>
+<footer>{{ team_name }} · <span lang="uz">Jamoa ID</span><span lang="en">Team ID</span> {{ team_id }} · <code>team_{{ team_id }}.csv</code> · {{ build_date }}</footer>
 </body>
 </html>
