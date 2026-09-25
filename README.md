@@ -46,7 +46,8 @@ Changing the team id: edit `team_id` in `configs/config.yaml`, then `uv run pyth
 The site is plain static HTML prebuilt into `site/` by `uv run python tasks.py site` and committed. The repo-root
 `vercel.json` tells Vercel to skip any install/build (no Python runtime) and serve `site/` as the output directory;
 `.vercelignore` keeps the upload to `site/` only. Pushing to `main` redeploys production. After rebuilding the site,
-commit `site/` so the deployment picks it up.
+commit `site/` and `artifacts/eda/` so the deployment picks it up. `tasks.py site` only needs `artifacts/` (no raw data);
+if `artifacts/oof_*.parquet` and `data/raw/train_signals.csv` are present it also adds the ROC-curve chart.
 
 ## How it works
 1. **Audit** (`src/signalscope/audit.py`): schema, duplicates, orphans, post-alert transactions, adversarial validation.

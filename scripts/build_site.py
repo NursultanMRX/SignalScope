@@ -36,6 +36,43 @@ def sri(url: str, cache: Path) -> str:
     return h
 
 
+def save_png(fig: go.Figure, path: Path, width: int, height: int) -> None:
+    """Render a PNG fallback with kaleido; if no Chrome is available keep a previously committed PNG."""
+    try:
+        fig.write_image(path, width=width, height=height, scale=1.5)
+    except Exception as e:  # noqa: BLE001 (kaleido raises RuntimeError/ValueError depending on version)
+        if not path.exists():
+            raise
+        print(f"  kept existing {path.name} (PNG render unavailable: {type(e).__name__})")
+
+
+def roc_figure(art: Path, cfg: dict, names: dict) -> go.Figure | None:
+    """ROC curves from the out-of-fold predictions (aggregated curve points only, no ids)."""
+    raw = ROOT / cfg["paths"]["raw"] / cfg["files"]["train_signals"]
+    oofs = {k: art / f"oof_{k}.parquet" for k in names if (art / f"oof_{k}.parquet").exists()}
+    if not oofs or not raw.exists():
+        return None
+    from sklearn.metrics import roc_auc_score, roc_curve
+    y = pd.read_csv(raw, dtype={"signal_id": str}).set_index("signal_id")["eskalatsiya"]
+    colors = {"lgb": LIGHT["escalated"], "xgb": LIGHT["dismissed"], "cat": LIGHT["s3"], "lr": LIGHT["text2"]}
+    fig = go.Figure()
+    for k, path in oofs.items():
+        o = pd.read_parquet(path)
+        yy = y.loc[o["signal_id"]].to_numpy()
+        fpr, tpr, _ = roc_curve(yy, o["oof"].to_numpy())
+        grid = [i / 200 for i in range(201)]
+        tpr_g = [float(max(tpr[fpr <= g])) for g in grid]
+        auc = roc_auc_score(yy, o["oof"].to_numpy())
+        fig.add_trace(go.Scatter(x=grid, y=tpr_g, mode="lines", name=f"{names[k]} (AUC {auc:.3f})",
+                                 line={"color": colors[k], "width": 2.5 if k == "lgb" else 1.5},
+                                 hovertemplate="FPR %{x:.2f}, TPR %{y:.2f}<extra></extra>"))
+    fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode="lines", name="Random / Tasodifiy (0.5)",
+                             line={"color": LIGHT["grid"], "dash": "dash", "width": 1}, hoverinfo="skip"))
+    style(fig, "", x="False positive rate / Noto'g'ri signal ulushi",
+          y="True positive rate / Topilgan eskalatsiyalar", height=520)
+    return fig
+
+
 def fmt(n: int) -> str:
     return f"{n:,}".replace(",", " ")
 
@@ -66,7 +103,7 @@ def main() -> None:
     style(fig, "", x="LightGBM gain (to'liq train / full-train refit)", height=560)
     fig.update_yaxes(tickfont={"size": 11})
     (art / "eda" / "f14_importance.json").write_text(fig.to_json(), encoding="utf-8")
-    fig.write_image(art / "eda" / "f14_importance.png", width=1000, height=560, scale=1.5)
+    save_png(fig, art / "eda" / "f14_importance.png", 1000, 560)
     figs.append({"id": "f14_importance", "title_uz": "Eng muhim 20 belgi (LightGBM gain)",
                  "title_en": "Top 20 features (LightGBM gain)",
                  "caption_uz": "Eng muhim belgilar — tur bo'yicha miqdor statistikasi (karta minimumi, naqd kirim o'rtachasi, "
@@ -74,6 +111,29 @@ def main() -> None:
                  "caption_en": "The most important features are per-type amount statistics (card minimum, cash-in mean, "
                                "bank-transfer outgoing mean and spread) and amount-histogram shares.",
                  "alt": "Horizontal bar chart of LightGBM gain for the 20 most important features."})
+
+    # model comparison (fold AUC mean ± std from cv_report.json)
+    names = {"lgb": "LightGBM", "xgb": "XGBoost", "cat": "CatBoost", "lr": "Logistic regression"}
+    order = sorted(cv["models"], key=lambda k: cv["models"][k]["fold_auc_mean"])
+    fig = go.Figure(go.Bar(
+        x=[cv["models"][k]["fold_auc_mean"] for k in order], y=[names[k] for k in order], orientation="h",
+        error_x={"type": "data", "array": [cv["models"][k]["fold_auc_std"] for k in order], "color": LIGHT["text2"]},
+        marker_color=[LIGHT["escalated"] if k in manifest["weights"] else LIGHT["dismissed"] for k in order],
+        text=[f"{cv['models'][k]['fold_auc_mean']:.3f}" for k in order], textposition="inside", insidetextanchor="start",
+        hovertemplate="%{y}: %{x:.4f}<extra></extra>"))
+    style(fig, "", x="ROC-AUC (fold mean ± std, 5 folds × 3 repeats)", height=360)
+    fig.update_xaxes(range=[0.5, 0.68])
+    (art / "eda" / "f15_models.json").write_text(fig.to_json(), encoding="utf-8")
+    save_png(fig, art / "eda" / "f15_models.png", 1000, 360)
+    figs.append({"id": "f15_models", "title_uz": "Modellar taqqoslanishi", "title_en": "Model comparison",
+                 "alt": "Horizontal bar chart of cross-validated ROC-AUC with error bars for four models."})
+    roc = roc_figure(art, cfg, names)
+    if roc is not None:  # needs local OOF predictions + raw labels; the result (curve points only) is committed
+        (art / "eda" / "f16_roc.json").write_text(roc.to_json(), encoding="utf-8")
+        save_png(roc, art / "eda" / "f16_roc.png", 1000, 520)
+    if (art / "eda" / "f16_roc.json").exists():
+        figs.append({"id": "f16_roc", "title_uz": "ROC egri chizig'i (OOF)", "title_en": "ROC curve (out-of-fold)",
+                     "alt": "ROC curves of the four models on out-of-fold predictions with the random diagonal."})
 
     for f in figs:
         shutil.copy(art / "eda" / f"{f['id']}.json", out / "data" / f"{f['id']}.json")
@@ -89,7 +149,13 @@ def main() -> None:
     m = {"headline": f"{headline:.3f}", "fold_mean": f"{m_lgb['fold_auc_mean']:.3f}",
          "fold_std": f"{m_lgb['fold_auc_std']:.3f}"}
     tr, te = audit["tx_train"], audit["tx_test"]
-    feats = pd.read_parquet(ROOT / cfg["paths"]["processed"] / "features_train.parquet", columns=None).shape[1] - 1
+    meta_p = art / "eda" / "site_meta.json"
+    fpath = ROOT / cfg["paths"]["processed"] / "features_train.parquet"
+    if fpath.exists():
+        feats = len(pd.read_parquet(fpath).columns) - 1
+        meta_p.write_text(json.dumps({"n_features": feats}), encoding="utf-8")
+    else:  # rebuilding the site without the processed data: use the count cached by the last full run
+        feats = json.loads(meta_p.read_text(encoding="utf-8"))["n_features"]
     n = {"train_signals": audit["signals_train"]["rows"], "train_signals_fmt": fmt(audit["signals_train"]["rows"]),
          "test_signals_fmt": fmt(audit["signals_test"]["rows"]), "train_tx_fmt": fmt(tr["rows"]),
          "test_tx_fmt": fmt(te["rows"]), "all_tx_fmt": fmt(tr["rows"] + te["rows"]),
@@ -175,38 +241,76 @@ def main() -> None:
                            "Features the final LightGBM leans on most. Mostly per-type amount statistics: card minimum, "
                            "cash-in mean, bank-transfer mean and spread."),
     }
-    for i, f in enumerate(["f01_target", "f02_history", "f04_burst", "f05_direction", "f06_types", "f07_amount_ratio",
-                           "f08_amount_types", "f10_time_of_day", "f11_univariate", "f12_drift", "f03_event_time",
-                           "f09_windows", "f13_ablation", "f14_importance"], start=1):
+    abl = st["ablation_delta_auc"]
+    CAP["f15_models"] = ("Bir xil CV bo'linishlarida to'rt model. LightGBM va XGBoost deyarli teng; logistik regressiya "
+                         "(baseline) ancha orqada, ya'ni signal chiziqli emas.",
+                         "Four models on the same CV splits. LightGBM and XGBoost are practically tied; logistic "
+                         "regression (the baseline) is well behind, so the signal is not linear.")
+    CAP["f16_roc"] = ("Har bir train signali uchun OOF bashoratlaridan ROC egri chizig'i. Diagonal = tasodifiy taxmin.",
+                      "ROC curve from the out-of-fold prediction for every training alert. The diagonal is random guessing.")
+    eda_main = ["f01_target", "f05_direction", "f06_types", "f07_amount_ratio", "f10_time_of_day", "f03_event_time"]
+    eda_more = ["f02_history", "f04_burst", "f08_amount_types", "f09_windows", "f11_univariate", "f12_drift"]
+    perf = ["f15_models"] + (["f16_roc"] if "f16_roc" in byid else []) + ["f14_importance"]
+    for i, f in enumerate(eda_main + eda_more + ["f13_ablation"] + perf, start=1):
         byid[f]["caption_uz"], byid[f]["caption_en"] = CAP[f]
         byid[f]["num"] = i
+    # one- or two-sentence takeaway printed above each main EDA chart
+    LEAD = {
+        "f01_target": ("Signallarning {r} qismi eskalatsiya qilinadi: sinflar nomutanosib, shuning uchun aniqlik (accuracy) "
+                       "emas, ROC-AUC ishlatamiz.",
+                       "{r} of alerts are escalated. The classes are imbalanced, which is why we score with ROC-AUC, "
+                       "not accuracy."),
+        "f05_direction": ("Kirim va chiqim nisbati ikkala sinfda deyarli bir xil: yo'nalishning o'zi eskalatsiyani "
+                          "tushuntirmaydi.",
+                          "Incoming vs outgoing balance is almost identical for both classes: direction alone does not "
+                          "explain escalation."),
+        "f06_types": ("Tranzaksiya turlari tarkibi ham bir xil (Cramér V = {v}). Muhimi turning o'zi emas, har bir tur "
+                      "ichidagi miqdorlar.",
+                      "The type mix is the same too (Cramér's V = {v}). What matters is not the type itself but the "
+                      "amounts within each type."),
+        "f07_amount_ratio": ("Eng aniq farq: eskalatsiya qilinganlarda mayda bank o'tkazmalari ko'proq, yiriklari kamroq.",
+                             "The clearest difference: escalated alerts have more small and fewer large bank transfers."),
+        "f10_time_of_day": ("Kun soati va hafta kuni bo'yicha farq yo'q, shuning uchun vaqt belgilarini modeldan "
+                            "chiqardik.",
+                            "No difference by hour or weekday, so we left time-of-day features out of the model."),
+        "f03_event_time": ("Eskalatsiya qilinganlar butun 180 kun davomida ~{a}% faolroq, lekin signal oldidan sakrash yo'q.",
+                           "Escalated customers are ~{a}% more active over the whole 180 days, but there is no spike "
+                           "before the alert."),
+    }
+    kw = {"r": n["rate_pct"], "v": f"{st['type_mix']['cramers_v_tx_level']:.4f}",
+          "a": f"{(ev['escalated_to_dismissed_volume_ratio'] - 1) * 100:.0f}"}
+    for f, (uz, en) in LEAD.items():
+        byid[f]["lead_uz"], byid[f]["lead_en"] = uz.format(**kw), en.format(**kw)
 
-    observations = [
-        {"uz": "Eskalatsiya qilinganlarda mayda bank o'tkazmalari ko'proq, yiriklari kamroq. Ma'lumotdagi eng aniq signal shu.",
-         "en": "Escalated alerts have more small and fewer large bank transfers. This is the clearest signal in the data.",
+    insights = [
+        {"q_uz": "Qaysi xatti-harakat eskalatsiya bilan eng ko'p bog'liq?",
+         "q_en": "Which behaviour is most linked to escalation?",
+         "uz": "Mayda bank o'tkazmalari ko'p va yiriklari kam bo'lishi. Ma'lumotdagi eng aniq signal shu.",
+         "en": "Many small and few large bank transfers. This is the clearest signal in the data.",
          "ev": f"median bank-transfer mean {bk['median_escalated']:.2f} vs {bk['median_dismissed']:.2f}, Cliff's δ = "
-               f"{bk['cliffs_delta']:.3f}, Mann-Whitney p = {bk['p']:.0e}. Fig. 6."},
-        {"uz": "Ular umuman olganda biroz faolroq, taxminan 6%, va bu butun 180 kun davomida saqlanadi.",
-         "en": "They are a bit more active overall, about 6%, and it holds over the whole 180 days.",
-         "ev": f"volume ratio {ev['escalated_to_dismissed_volume_ratio']:.3f}; n_tx Cliff's δ = {st['n_tx']['cliffs_delta']:.3f}. "
-               "Fig. 11."},
-        {"uz": "Signal oldidan \"sakrash\" yo'q. Buni ko'p tekshirdik, chunki birinchi gipotezamiz shu edi.",
-         "en": "There is no spike right before the alert. We checked this a lot because it was our first hypothesis.",
-         "ev": f"largest |Cliff's δ| over 1 to 90-day windows = {win_max:.3f}. Fig. 12."},
-        {"uz": "Tranzaksiyalarning bir qismi signal sanasidan oldingi kechaning oxirgi 3 daqiqasiga to'plangan.",
-         "en": "A chunk of transactions is squeezed into the last 3 minutes before midnight of the alert date.",
-         "ev": f"{bu['share_of_rows']:.1%} of rows, {bu['signals_with_burst']:.0%} of alerts. Fig. 3."},
-        {"uz": "Tur va yo'nalish (kirim/chiqim) tarkibi ikkala sinfda deyarli bir xil.",
-         "en": "Type and direction mix is basically the same for both classes.",
-         "ev": f"transaction-level Cramér's V = {st['type_mix']['cramers_v_tx_level']:.4f}. Figs. 4, 5."},
-        {"uz": "Tungi va dam olish kuni operatsiyalari farq qilmaydi.",
-         "en": "Night-time and weekend activity make no difference.",
-         "ev": "ablation: time-pattern group ΔAUC ≈ 0. Fig. 8, Fig. 13."},
-        {"uz": "Bitta belgi bilan ish bitmaydi: hech biri AUC 0.58 dan oshmaydi.",
-         "en": "No single feature does the job: none of them goes above 0.58 AUC.",
-         "ev": f"{st['univariate_n_over_055']} features above 0.55. Fig. 9."},
+               f"{bk['cliffs_delta']:.3f}, Mann-Whitney p = {bk['p']:.0e}."},
+        {"q_uz": "Eskalatsiya qilinganlar faolroqmi?", "q_en": "Are escalated customers more active?",
+         "uz": f"Ha, lekin biroz: ~{kw['a']}% ko'proq tranzaksiya, va bu butun 180 kun davomida saqlanadi.",
+         "en": f"Yes, slightly: ~{kw['a']}% more transactions, and it holds over the whole 180 days.",
+         "ev": f"volume ratio {ev['escalated_to_dismissed_volume_ratio']:.3f}; median {st['n_tx']['median_escalated']:.0f} "
+               f"vs {st['n_tx']['median_dismissed']:.0f} transactions; Cliff's δ = {st['n_tx']['cliffs_delta']:.3f}."},
+        {"q_uz": "Signal oldidan faollik o'zgaradimi?", "q_en": "Does activity change right before the alert?",
+         "uz": "Yo'q. Oxirgi 1–90 kunlik oynalarda ikkala sinf bir xil; birinchi gipotezamiz tasdiqlanmadi.",
+         "en": "No. In 1 to 90-day windows both classes look the same; our first hypothesis did not hold.",
+         "ev": f"largest |Cliff's δ| over 1 to 90-day windows = {win_max:.3f}."},
+        {"q_uz": "Tur, yo'nalish yoki vaqt muhimmi?", "q_en": "Do type, direction or time of day matter?",
+         "uz": "Alohida olganda deyarli yo'q. Tungi va dam olish kuni operatsiyalari ham farq qilmaydi.",
+         "en": "On their own, hardly. Night-time and weekend activity make no difference either.",
+         "ev": f"type mix Cramér's V = {kw['v']}; time-pattern features ΔAUC "
+               f"{abl['Vaqt naqshlari / time patterns']:+.4f} in ablation."},
+        {"q_uz": "Bitta belgi yetadimi?", "q_en": "Is one feature enough?",
+         "uz": f"Yo'q. Eng yaxshi bitta belgi AUC {max(top1[1], 1 - top1[1]):.3f}; yuzlab kuchsiz belgilarni birlashtirgan "
+               f"model {m['headline']} beradi.",
+         "en": f"No. The best single feature reaches AUC {max(top1[1], 1 - top1[1]):.3f}; a model combining hundreds of "
+               f"weak features gets {m['headline']}.",
+         "ev": f"{st['univariate_n_over_055']} features above 0.55 on their own."},
     ]
-    abl = st["ablation_delta_auc"]
+
     feature_table = [
         {"uz": "Miqdor turga qarab farq qiladi; bank o'tkazmalari eng kuchli",
          "en": "Amount depends on type; bank transfers matter most",
@@ -224,7 +328,6 @@ def main() -> None:
         {"uz": "Pass-through: kirdi, tez chiqdi (olib tashlandi)", "en": "Pass-through: money in, quickly out (dropped)",
          "feat": "pt_*", "delta": f"{abl['Pass-through']:+.4f}"},
     ]
-    names = {"lgb": "LightGBM", "xgb": "XGBoost", "cat": "CatBoost", "lr": "Logistic regression"}
     results = [{"name": names[k], "fold": f"{v['fold_auc_mean']:.4f} ± {v['fold_auc_std']:.4f}",
                 "oof": f"{v['oof_auc_of_mean_pred']:.4f}"} for k, v in cv["models"].items()]
     fw = cv["blend"]["foldwise"]
@@ -260,12 +363,12 @@ def main() -> None:
     url = f"https://cdn.jsdelivr.net/npm/plotly.js-dist-min@{ver}/plotly.min.js"
     env = Environment(loader=FileSystemLoader(SRC), autoescape=True)
     html = env.get_template("template.html").render(
-        n=n, m=m, figs=byid, gallery=[byid[k] for k in ["f02_history", "f04_burst", "f05_direction", "f06_types",
-                                                        "f07_amount_ratio", "f08_amount_types", "f10_time_of_day",
-                                                        "f11_univariate", "f12_drift"]],
-        observations=observations, feature_table=feature_table, results=results, ens=ens, negatives=negatives,
+        n=n, m=m, figs=byid, eda_main=[byid[k] for k in eda_main], eda_more=[byid[k] for k in eda_more],
+        perf=[byid[k] for k in perf], insights=insights, feature_table=feature_table, results=results, ens=ens,
+        negatives=negatives, chosen=chosen, chosen_short=names[max(w, key=w.get)] if len(w) == 1 else "Blend",
         dark_map={k.lower(): v for k, v in DARK_MAP.items()}, plotly_version=ver,
         plotly_sri=sri(url, art / "cache" / f"plotly_{ver}.sri"), team_name=cfg.get("team_name", cfg["team_id"]),
+        team_id=cfg["team_id"], sha=manifest["sha256"][:12],
         notebook_name=f"notebooks/team_{cfg['team_id']}_reproducible.ipynb", repo_url=cfg.get("repo_url"),
         build_date=date.today().isoformat())
     html = html.replace('<caption class="sr-only"></caption>', "")

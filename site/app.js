@@ -1,4 +1,4 @@
-/* SignalScope UZ site: language + theme toggles, lazy Plotly charts that follow the theme. */
+/* VisionX site: language + theme toggles, lazy Plotly charts that follow the theme. */
 (() => {
   const root = document.documentElement;
   const store = {

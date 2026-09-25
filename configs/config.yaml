@@ -1,4 +1,5 @@
 # SignalScope UZ — single source of truth for paths, seeds, CV, and model params.
+team_name: VisionX         # shown on the website
 team_id: SSUZ7K            # PLACEHOLDER — replace with the official team id, then `python tasks.py predict notebook package`
 
 seed: 42

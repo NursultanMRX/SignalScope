@@ -72,4 +72,16 @@ signal that could reach 0.8, and we did not use any leak.
 - Uzbek default, English toggle; light/dark follows the system with a 2-state override (modern-web-guidance
   `dark-mode` guide); below-the-fold sections use `content-visibility: auto` + `contain-intrinsic-size`.
 - Only aggregated numbers are published; the build fails if a `SG_\d{6}` id appears in the output.
-- Deployment: Vercel (production domain, deployment protection off). URL recorded in `SITE_URL.txt` and README.
+- Deployment: Vercel, static only (root `vercel.json`: no install/build, `outputDirectory: site`). URL in `SITE_URL.txt`.
+- Restructured for the VisionX presentation (team name from `team_name` in config) into 8 numbered sections:
+  overview with KPI tiles → dataset → EDA → key insights → feature engineering → model → performance → conclusion.
+  Six key EDA charts carry a one/two-sentence takeaway above them; the other six sit in a collapsed "More charts".
+  Five insights are phrased as question → answer → statistic. The conclusion answers three questions (behaviours,
+  how the model uses them, limitations).
+- Model section states that validation is split at alert level (transactions are never split on their own) and that
+  the site, the CSV and the notebook use the same model; the CSV's SHA256 prefix is printed next to it.
+- Performance adds a model-comparison chart (fold AUC ± std from `cv_report.json`). The ROC curve (`f16_roc`) is built
+  from `artifacts/oof_*.parquet` + train labels when those exist locally; only 201 curve points per model are
+  committed. Without them the chart is omitted rather than filled with placeholder numbers.
+- The site rebuilds without raw data: feature count is cached in `artifacts/eda/site_meta.json`, and PNG fallbacks
+  keep the committed file when kaleido has no Chrome.

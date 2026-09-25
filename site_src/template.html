@@ -7,6 +7,16 @@
     <span lang="uz">{{ f.caption_uz }}</span><span lang="en">{{ f.caption_en }}</span></figcaption>
 </figure>
 {%- endmacro -%}
+{%- macro chart(f) -%}
+<div class="chart">
+  <h3><span lang="uz">{{ f.title_uz }}</span><span lang="en">{{ f.title_en }}</span></h3>
+  {% if f.lead_en %}<p class="lead"><span lang="uz">{{ f.lead_uz }}</span><span lang="en">{{ f.lead_en }}</span></p>{% endif %}
+  {{ figure(f) }}
+</div>
+{%- endmacro -%}
+{%- macro h2(num, uz, en) -%}
+<h2><span class="num">{{ num }}</span><span lang="uz">{{ uz }}</span><span lang="en">{{ en }}</span></h2>
+{%- endmacro -%}
 <!doctype html>
 <html lang="uz" data-lang="uz">
 <head>
@@ -23,11 +33,11 @@
   } catch (e) {}
 }
 </script>
-<title>SignalScope UZ: which alerts get escalated?</title>
-<meta name="description" content="Hackathon write-up: EDA of the alert transaction histories and our escalation model (CV ROC-AUC {{ m.headline }}). Signallar eskalatsiyasi bo'yicha EDA va model.">
+<title>{{ team_name }}: Financial Alert Intelligence</title>
+<meta name="description" content="Predicting which financial-monitoring alerts get escalated: EDA of the transaction histories and a {{ chosen_short }} model with validation ROC-AUC {{ m.headline }}. Moliyaviy signallar eskalatsiyasi bo'yicha EDA va model.">
 <meta property="og:type" content="article">
-<meta property="og:title" content="SignalScope UZ: which alerts get escalated?">
-<meta property="og:description" content="What we found in {{ n.train_tx_fmt }} synthetic transactions, and a model with CV ROC-AUC {{ m.headline }}.">
+<meta property="og:title" content="{{ team_name }}: Financial Alert Intelligence">
+<meta property="og:description" content="EDA of {{ n.all_tx_fmt }} synthetic transactions and an escalation model with validation ROC-AUC {{ m.headline }}.">
 <meta property="og:image" content="img/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -43,17 +53,16 @@
 <a class="skip" href="#main"><span lang="uz">Matnga o'tish</span><span lang="en">Skip to text</span></a>
 <header class="top">
   <div class="top-in">
-    <b>SignalScope UZ</b>
+    <b>{{ team_name }}</b>
     <nav aria-label="Sections">
-      <a href="#how"><span lang="uz">Yondashuv</span><span lang="en">Approach</span></a>
-      <a href="#data"><span lang="uz">Ma'lumot</span><span lang="en">Data</span></a>
-      <a href="#target"><span lang="uz">Maqsad</span><span lang="en">Target</span></a>
-      <a href="#charts"><span lang="uz">Grafiklar</span><span lang="en">Charts</span></a>
-      <a href="#noticed"><span lang="uz">Kuzatuvlar</span><span lang="en">What we noticed</span></a>
-      <a href="#before"><span lang="uz">Signaldan oldin</span><span lang="en">Before the alert</span></a>
+      <a href="#overview"><span lang="uz">Umumiy</span><span lang="en">Overview</span></a>
+      <a href="#data"><span lang="uz">Ma'lumot</span><span lang="en">Dataset</span></a>
+      <a href="#eda"><span lang="uz">EDA</span><span lang="en">EDA</span></a>
+      <a href="#insights"><span lang="uz">Xulosalar</span><span lang="en">Insights</span></a>
       <a href="#features"><span lang="uz">Belgilar</span><span lang="en">Features</span></a>
       <a href="#model"><span lang="uz">Model</span><span lang="en">Model</span></a>
-      <a href="#end"><span lang="uz">Xulosa</span><span lang="en">Wrap-up</span></a>
+      <a href="#performance"><span lang="uz">Natija</span><span lang="en">Performance</span></a>
+      <a href="#end"><span lang="uz">Yakun</span><span lang="en">Conclusion</span></a>
     </nav>
     <button id="lang-toggle" type="button">EN</button>
     <button id="theme-toggle" type="button">Dark</button>
@@ -61,40 +70,41 @@
 </header>
 
 <main id="main">
-<!-- 1 -->
-<section id="top" class="text">
-  <h1><span lang="uz">Qaysi signallar eskalatsiya qilinadi?</span><span lang="en">Which alerts get escalated?</span></h1>
-  <p class="sub"><span lang="uz">Moliyaviy monitoring xakatoni uchun EDA va model. Jamoa {{ team_name }}.</span><span lang="en">EDA and a model for the financial monitoring hackathon. Team {{ team_name }}.</span></p>
-  <p><span lang="uz">Monitoring bo'limiga mijozlarning tranzaksiya tarixidan avtomatik signallar keladi. Mutaxassis har birini ko'rib chiqadi: yo rad etadi, yo eskalatsiya qiladi. Bizning vazifa: yashirin test to'plamidagi har bir signal uchun eskalatsiya ehtimolini berish. Baholash ROC-AUC bo'yicha.</span>
-  <span lang="en">A monitoring unit gets automatic alerts generated from customers' transaction histories. A specialist reviews each one and either dismisses it or escalates it. Our job: give every alert in the hidden test set a probability of being escalated. Scoring is ROC-AUC.</span></p>
-  <p class="big"><span lang="uz">Eng yaxshi natijamiz: <mark>CV ROC-AUC {{ m.headline }}</mark> (5 fold × 3 marta takror; foldlar bo'yicha {{ m.fold_mean }} ± {{ m.fold_std }}).</span><span lang="en">Our best result: <mark>CV ROC-AUC {{ m.headline }}</mark> (5 folds × 3 repeats; per fold {{ m.fold_mean }} ± {{ m.fold_std }}).</span></p>
-  <p><span lang="uz">Rostini aytsak, bu raqam juda baland emas. Quyida nima uchunligini va nimalarni sinab ko'rganimizni yozdik.</span><span lang="en">Honestly, that number is not high. Below we explain why, and what we tried along the way.</span></p>
-  <p class="byline"><span lang="uz">Ma'lumotlar sintetik, haqiqiy mijozlar yo'q. Oxirgi yangilanish: {{ build_date }}.</span><span lang="en">The data are synthetic, no real customers. Last updated {{ build_date }}.</span></p>
+<!-- 1. OVERVIEW -->
+<section id="overview" class="hero">
+  <p class="eyebrow"><span lang="uz">Moliyaviy monitoring xakatoni · FinTech / AI</span><span lang="en">Financial monitoring hackathon · FinTech / AI</span></p>
+  <h1>{{ team_name }} <span class="dash">—</span> Financial Alert Intelligence</h1>
+  <p class="sub"><span lang="uz">Moliyaviy signallar eskalatsiyasini machine learning yordamida bashorat qilish.</span><span lang="en">Predicting financial alert escalation through machine learning.</span></p>
+  <p class="text"><span lang="uz">Monitoring bo'limiga mijozlarning tranzaksiya tarixidan avtomatik signallar keladi. Mutaxassis har birini yo rad etadi, yo eskalatsiya qiladi. Maqsadimiz: yashirin test to'plamidagi har bir signal uchun eskalatsiya ehtimolini berish (baholash: ROC-AUC).</span><span lang="en">Automatic alerts are raised from customers' transaction histories, and a specialist either dismisses or escalates each one. Our goal: give every alert in the hidden test set a probability of escalation (scored by ROC-AUC).</span></p>
+  <dl class="kpis">
+    <div class="kpi"><dt><span lang="uz">Train signallar</span><span lang="en">Training signals</span></dt><dd>{{ n.train_signals_fmt }}</dd></div>
+    <div class="kpi"><dt><span lang="uz">Test signallar</span><span lang="en">Test signals</span></dt><dd>{{ n.test_signals_fmt }}</dd></div>
+    <div class="kpi"><dt><span lang="uz">Tranzaksiyalar</span><span lang="en">Transactions</span></dt><dd>{{ n.all_tx_fmt }}</dd></div>
+    <div class="kpi"><dt><span lang="uz">Eskalatsiya ulushi</span><span lang="en">Escalation rate</span></dt><dd>{{ n.rate_pct }}</dd></div>
+    <div class="kpi"><dt><span lang="uz">Yakuniy model</span><span lang="en">Final model</span></dt><dd>{{ chosen_short }}</dd></div>
+    <div class="kpi accent"><dt><span lang="uz">Validatsiya ROC-AUC</span><span lang="en">Validation ROC-AUC</span></dt><dd>{{ m.headline }}</dd></div>
+  </dl>
+  <p class="byline"><span lang="uz">Barcha raqamlar bizning koddan olingan (5 fold × 3 takror CV). Ma'lumotlar sintetik, haqiqiy mijozlar yo'q; saytda xom tranzaksiya yoki signal ID'lari e'lon qilinmagan. Yangilangan: {{ build_date }}.</span><span lang="en">Every number comes from our code (5-fold × 3-repeat CV). The data are synthetic, with no real customers; no raw transactions or signal IDs are published here. Updated {{ build_date }}.</span></p>
 </section>
 
-<!-- 2 -->
-<section id="how" class="text">
-  <h2><span lang="uz">Qanday ishladik</span><span lang="en">How we approached it</span></h2>
-<pre class="flow">raw files → audit → EDA → features (1 row / alert) → CV 5×3 → LightGBM · XGBoost · CatBoost · LogReg → blend check → submission</pre>
-  <p><span lang="uz">Avval ma'lumotni tekshirdik (dublikatlar, bo'sh qiymatlar, signaldan keyingi tranzaksiyalar). Keyin har bir signal uchun faqat signal sanasidan <em>oldingi</em> tranzaksiyalardan {{ n.n_features }} ta belgi yig'dik. Modellarni bir xil CV bo'linishlarida solishtirdik va biror g'oyani faqat CV natijasini yaxshilasa qoldirdik. Hamma seed'lar qotirilgan, butun jarayon bitta buyruq bilan qaytadan ishlaydi.</span>
-  <span lang="en">First we checked the data (duplicates, nulls, transactions after the alert). Then for each alert we built {{ n.n_features }} features using only transactions from <em>before</em> the alert date. All models were compared on the same CV splits, and an idea stayed in only if it improved the CV score. Seeds are fixed and the whole thing re-runs with one command.</span></p>
-</section>
-
-<!-- 3 -->
+<!-- 2. DATASET OVERVIEW -->
 <section id="data" class="later">
   <div class="text">
-    <h2><span lang="uz">Ma'lumotlar</span><span lang="en">The data</span></h2>
-    <p><span lang="uz">Beshta fayl: signallar (train/test), ularning tranzaksiyalari (train/test) va namuna javob fayli.</span><span lang="en">Five files: alerts (train/test), their transactions (train/test) and a sample submission.</span></p>
+    {{ h2(2, "Ma'lumotlar", "Dataset overview") }}
+    <p><span lang="uz">Beshta fayl: signallar (train/test), ularning tranzaksiyalari (train/test) va namuna javob fayli. Har bir signalga uning mijozining signalgacha bo'lgan tranzaksiya tarixi biriktirilgan.</span><span lang="en">Five files: alerts (train/test), their transactions (train/test) and a sample submission. Each alert comes with its customer's transaction history up to the alert.</span></p>
   </div>
   <div class="two">
     <div class="wide">
       <table>
-        <thead><tr><th><span lang="uz">Fayl</span><span lang="en">File</span></th><th><span lang="uz">Qatorlar</span><span lang="en">Rows</span></th></tr></thead>
+        <thead><tr><th><span lang="uz">Ko'rsatkich</span><span lang="en">Indicator</span></th><th><span lang="uz">Qiymat</span><span lang="en">Value</span></th></tr></thead>
         <tbody>
-          <tr><td><code>train_signals.csv</code></td><td class="n">{{ n.train_signals_fmt }}</td></tr>
-          <tr><td><code>test_signals.csv</code></td><td class="n">{{ n.test_signals_fmt }}</td></tr>
-          <tr><td><code>train_transactions.parquet</code></td><td class="n">{{ n.train_tx_fmt }}</td></tr>
-          <tr><td><code>test_transactions.parquet</code></td><td class="n">{{ n.test_tx_fmt }}</td></tr>
+          <tr><td><span lang="uz">Train signallar</span><span lang="en">Training signals</span></td><td class="n">{{ n.train_signals_fmt }}</td></tr>
+          <tr><td><span lang="uz">Test signallar</span><span lang="en">Test signals</span></td><td class="n">{{ n.test_signals_fmt }}</td></tr>
+          <tr><td><span lang="uz">Tarixiy tranzaksiyalar (train / test)</span><span lang="en">Historical transactions (train / test)</span></td><td class="n">{{ n.train_tx_fmt }} / {{ n.test_tx_fmt }}</td></tr>
+          <tr><td><span lang="uz">Eskalatsiya ulushi</span><span lang="en">Escalation rate</span></td><td class="n">{{ n.rate_pct }}</td></tr>
+          <tr><td><span lang="uz">Signalga tranzaksiya (o'rtacha / median)</span><span lang="en">Transactions per alert (mean / median)</span></td><td class="n">{{ n.tx_mean }} / {{ n.tx_median }}</td></tr>
+          <tr><td><span lang="uz">Signal sanalari</span><span lang="en">Alert dates</span></td><td class="n">{{ n.date_min }} … {{ n.date_max }}</td></tr>
+          <tr><td><span lang="uz">Bo'sh qiymat / takroriy ID / "yetim" tranzaksiya</span><span lang="en">Nulls / duplicate IDs / orphan transactions</span></td><td class="n">0 / 0 / 0</td></tr>
         </tbody>
       </table>
       <p><small><span lang="uz">Tranzaksiya ustunlari: vaqt, <code>kirim</code>/<code>chiqim</code>, tur (<code>karta</code>, <code>bank_otkazmasi</code>, <code>naqd</code>, <code>xalqaro</code>) va <code>miqdor_indeksi</code> (standartlashtirilgan miqdor, so'm emas).</span><span lang="en">Transaction columns: timestamp, <code>kirim</code>/<code>chiqim</code> (in/out), type (<code>karta</code> card, <code>bank_otkazmasi</code> transfer, <code>naqd</code> cash, <code>xalqaro</code> international) and <code>miqdor_indeksi</code>, a standardised size index rather than money.</span></small></p>
@@ -121,60 +131,55 @@
     </div>
   </div>
   <div class="text">
-    <p><span lang="uz">Bir signalga o'rtacha {{ n.tx_mean }} ta tranzaksiya to'g'ri keladi (median {{ n.tx_median }}), odatda signalgacha bo'lgan oxirgi ~180 kun. Signal sanalari train'da ham, test'da ham {{ n.date_min }} dan {{ n.date_max }} gacha. Bo'sh qiymat, takroriy ID yoki "yetim" tranzaksiya topilmadi.</span>
-    <span lang="en">An alert has {{ n.tx_mean }} transactions on average (median {{ n.tx_median }}), usually covering the last ~180 days before the alert. Alert dates run from {{ n.date_min }} to {{ n.date_max }} in both train and test. We found no nulls, no duplicate IDs and no orphan transactions.</span></p>
-    <h3><span lang="uz">Sizib chiqish (leakage) bilan ehtiyot bo'ldik</span><span lang="en">Being careful about leakage</span></h3>
+    <h3><span lang="uz">Kelajak ma'lumotidan foydalanmaslik (leakage)</span><span lang="en">No information from the future (leakage)</span></h3>
     <ul>
-      <li><span lang="uz">Signal sanasida vaqt yo'q, shuning uchun signal momentini o'sha kunning 00:00 deb oldik. Shundan keyingi {{ n.post_train }} (train) va {{ n.post_test }} (test) tranzaksiyani belgilardan chiqarib tashladik.</span><span lang="en">The alert date has no time, so we treat the alert as happening at 00:00 that day. The {{ n.post_train }} (train) and {{ n.post_test }} (test) transactions at or after that moment are not used.</span></li>
-      <li><span lang="uz"><code>signal_id</code> modelga berilmaydi. Tekshirib ko'rdik: ID tartibi bilan maqsad orasidagi AUC {{ n.id_auc }}, ya'ni bog'liqlik yo'q.</span><span lang="en"><code>signal_id</code> is never given to the model. We checked anyway: ID order vs target gives AUC {{ n.id_auc }}, i.e. nothing.</span></li>
-      <li><span lang="uz">Train va test'ni ajrata oladigan model qurdik (adversarial validation): AUC {{ n.adv_auc }}. Demak test oddiy tasodifiy tanlanma.</span><span lang="en">We trained a model to tell train from test (adversarial validation): AUC {{ n.adv_auc }}. So the test set is just a random sample.</span></li>
+      <li><span lang="uz">Signal sanasida vaqt yo'q, shuning uchun signalni o'sha kunning 00:00 deb oldik. Undan keyingi {{ n.post_train }} (train) va {{ n.post_test }} (test) tranzaksiya belgilarda ishlatilmaydi.</span><span lang="en">The alert date has no time, so we treat the alert as 00:00 that day. The {{ n.post_train }} (train) and {{ n.post_test }} (test) transactions at or after that moment are never used.</span></li>
+      <li><span lang="uz"><code>signal_id</code> modelga berilmaydi (ID tartibi va maqsad: AUC {{ n.id_auc }}, bog'liqlik yo'q).</span><span lang="en"><code>signal_id</code> is never a model input (ID order vs target: AUC {{ n.id_auc }}, no relation).</span></li>
+      <li><span lang="uz">Train va test'ni ajratishga uringan model (adversarial validation) AUC {{ n.adv_auc }} oldi: test oddiy tasodifiy tanlanma.</span><span lang="en">A model trying to tell train from test (adversarial validation) scored AUC {{ n.adv_auc }}: the test set is an ordinary random sample.</span></li>
     </ul>
   </div>
 </section>
 
-<!-- 4 -->
-<section id="target" class="later">
+<!-- 3. EDA -->
+<section id="eda" class="later">
   <div class="text">
-    <h2><span lang="uz">Maqsad o'zgaruvchisi</span><span lang="en">The target</span></h2>
-    <p><span lang="uz">Train'dagi {{ n.train_signals_fmt }} signalning {{ n.rate_pct }} qismi eskalatsiya qilingan. Oylar bo'yicha ulush biroz sakraydi, lekin bu shovqin darajasida.</span><span lang="en">{{ n.rate_pct }} of the {{ n.train_signals_fmt }} training alerts were escalated. The monthly rate wobbles a bit, but within noise.</span></p>
+    {{ h2(3, "Ma'lumotlar tahlili (EDA)", "Exploratory data analysis") }}
+    <p><span lang="uz">Olti asosiy grafik; har birining tepasida bir-ikki jumlalik xulosa. Grafiklar interaktiv va faqat yig'ma raqamlardan chizilgan.</span><span lang="en">Six key charts, each with a one or two-sentence takeaway above it. Charts are interactive and drawn from aggregated numbers only.</span></p>
   </div>
-  {{ figure(figs.f01_target) }}
+  {% for f in eda_main %}{{ chart(f) }}{% endfor %}
+  <details class="more">
+    <summary><span lang="uz">Qo'shimcha grafiklar ({{ eda_more|length }})</span><span lang="en">More charts ({{ eda_more|length }})</span></summary>
+    {% for f in eda_more %}{{ chart(f) }}{% endfor %}
+  </details>
 </section>
 
-<!-- 5 -->
-<section id="charts" class="later">
-  <div class="text">
-    <h2><span lang="uz">Grafiklar</span><span lang="en">Charts</span></h2>
-    <p><span lang="uz">Hamma grafiklar interaktiv (sichqonchani olib boring). Ular faqat yig'ma raqamlardan chizilgan, bitta ham xom tranzaksiya saytga chiqmagan.</span><span lang="en">All charts are interactive (hover over them). They are drawn from aggregated numbers only; no raw transactions are published here.</span></p>
-  </div>
-  {% for f in gallery %}{{ figure(f) }}{% endfor %}
-</section>
-
-<!-- 6 -->
-<section id="noticed" class="later text">
-  <h2><span lang="uz">Tranzaksiya tarixidan nimani ko'rdik</span><span lang="en">What we noticed in the transaction history</span></h2>
+<!-- 4. KEY INSIGHTS -->
+<section id="insights" class="later text">
+  {{ h2(4, "Asosiy xulosalar", "Key insights") }}
+  <p><span lang="uz">Taxmin emas: har bir xulosa statistik test bilan tekshirilgan.</span><span lang="en">Not guesses: every point is backed by a statistical test.</span></p>
   <ol class="notes">
-    {% for o in observations %}
-    <li><span lang="uz">{{ o.uz }}</span><span lang="en">{{ o.en }}</span><span class="why">{{ o.ev }}</span></li>
+    {% for o in insights %}
+    <li><b class="q"><span lang="uz">{{ o.q_uz }}</span><span lang="en">{{ o.q_en }}</span></b>
+      <span lang="uz">{{ o.uz }}</span><span lang="en">{{ o.en }}</span><span class="why">{{ o.ev }}</span></li>
     {% endfor %}
   </ol>
 </section>
 
-<!-- 7 -->
-<section id="before" class="later">
-  <div class="text">
-    <h2><span lang="uz">Signaldan oldin: eskalatsiya va rad etilganlar</span><span lang="en">Before the alert: escalated vs dismissed</span></h2>
-    <p><span lang="uz">Biz "signal oldidan faollik keskin oshadi" degan gipotezadan boshlagandik. Ma'lumot buni tasdiqlamadi.</span><span lang="en">We started with the hypothesis that activity spikes right before an escalated alert. The data did not back that up.</span></p>
-  </div>
-  {{ figure(figs.f03_event_time) }}
-  {{ figure(figs.f09_windows) }}
-</section>
-
-<!-- 8 -->
+<!-- 5. FEATURE ENGINEERING -->
 <section id="features" class="later">
   <div class="text">
-    <h2><span lang="uz">Grafiklardan belgilarga</span><span lang="en">From the charts to features</span></h2>
-    <p><span lang="uz">Har bir belgi guruhini o'chirib ko'rib, CV qancha tushishini o'lchadik. Musbat son = guruh foydali.</span><span lang="en">We switched off one feature group at a time and measured how much the CV score dropped. Positive = the group helps.</span></p>
+    {{ h2(5, "Belgilar yaratish", "Feature engineering") }}
+    <p><span lang="uz">Tranzaksiyalarni qanday qilib bashorat qiluvchi belgilarga aylantirdik? Asosiy g'oya: bitta signalga tegishli yuzlab tranzaksiyalar bitta qatorga umumlashtiriladi.</span><span lang="en">How did we turn transactions into predictive features? The key idea: the hundreds of transactions behind one alert are summarised into a single row.</span></p>
+  </div>
+  <ol class="flowline" aria-label="Pipeline">
+    <li><b><span lang="uz">Tarixiy tranzaksiyalar</span><span lang="en">Historical transactions</span></b><small><span lang="uz">faqat signal sanasidan oldingi</span><span lang="en">only before the alert date</span></small></li>
+    <li><b><span lang="uz">Signal bo'yicha agregatsiya</span><span lang="en">Aggregation per alert</span></b><small><span lang="uz">~{{ n.tx_median }} qator → 1 qator</span><span lang="en">~{{ n.tx_median }} rows → 1 row</span></small></li>
+    <li><b><span lang="uz">Xulq-atvor belgilari</span><span lang="en">Behavioural features</span></b><small><span lang="uz">{{ n.n_features }} ta</span><span lang="en">{{ n.n_features }} features</span></small></li>
+    <li><b><span lang="uz">ML model</span><span lang="en">ML model</span></b><small>{{ chosen_short }}</small></li>
+    <li><b><span lang="uz">Eskalatsiya ehtimoli</span><span lang="en">Escalation probability</span></b><small>0 … 1</small></li>
+  </ol>
+  <div class="text">
+    <p><span lang="uz">Har bir belgi guruhini o'chirib, CV qancha tushishini o'lchadik (musbat = guruh foydali). Foyda bermagan guruhlar olib tashlandi.</span><span lang="en">We switched off one feature group at a time and measured the CV drop (positive = the group helps). Groups that did not help were dropped.</span></p>
   </div>
   <div class="wide">
     <table>
@@ -189,50 +194,77 @@
   {{ figure(figs.f13_ablation) }}
 </section>
 
-<!-- 9 -->
+<!-- 6. MACHINE LEARNING MODEL -->
 <section id="model" class="later">
   <div class="text">
-    <h2><span lang="uz">Model va validatsiya</span><span lang="en">Model and validation</span></h2>
-    <p><span lang="uz">Test sanalari train bilan bir xil oraliqda, adversarial AUC 0.5 atrofida. Shuning uchun vaqt bo'yicha bo'lish shart emas edi va biz takroriy stratifikatsiyalangan 5-fold ishlatdik (3 marta, seed 42). Imputatsiya, masshtablash va erta to'xtatish faqat o'quv fold ichida. Giperparametrlarni Optuna bilan topib, keyin qotirib qo'ydik.</span>
-    <span lang="en">Test dates cover the same range as train and adversarial AUC is around 0.5, so a time-based split was not needed. We used repeated stratified 5-fold CV (3 repeats, seed 42). Imputation, scaling and early stopping only ever see the training fold. Hyper-parameters were tuned with Optuna and then frozen.</span></p>
+    {{ h2(6, "Machine learning model", "Machine learning model") }}
+    <ul class="models">
+      <li><b>Logistic regression</b> — <span lang="uz">baseline (oddiy chiziqli model)</span><span lang="en">baseline (a simple linear model)</span></li>
+      <li><b>CatBoost</b>, <b>XGBoost</b> — <span lang="uz">gradient boosting nomzodlari</span><span lang="en">gradient-boosting candidates</span></li>
+      <li><b>LightGBM</b> — <span lang="uz">gradient boosting nomzodi</span><span lang="en">gradient-boosting candidate</span></li>
+      <li><b>ROC-AUC</b> — <span lang="uz">baholash ko'rsatkichi</span><span lang="en">evaluation metric</span></li>
+    </ul>
+    <h3><span lang="uz">Validatsiya qanday qurilgan</span><span lang="en">How validation is set up</span></h3>
+    <ul>
+      <li><span lang="uz">Bo'lish <b>signal darajasida</b>: takroriy stratifikatsiyalangan 5-fold (3 marta, seed 42). Tranzaksiyalar alohida bo'linmaydi; har bir signalning belgilari faqat o'z tranzaksiyalaridan hisoblanadi.</span><span lang="en">The split is <b>at alert level</b>: repeated stratified 5-fold (3 repeats, seed 42). Transactions are never split on their own; each alert's features come only from its own transactions.</span></li>
+      <li><span lang="uz">Imputatsiya, masshtablash va erta to'xtatish faqat o'quv fold ichida. Giperparametrlar Optuna bilan topilib, qotirilgan.</span><span lang="en">Imputation, scaling and early stopping only ever see the training fold. Hyper-parameters were tuned with Optuna and then frozen.</span></li>
+      <li><span lang="uz">Test sanalari train bilan bir xil oraliqda va adversarial AUC ≈ 0.5, shuning uchun tasodifiy (vaqt bo'yicha emas) bo'lish o'rinli.</span><span lang="en">Test dates cover the same range as train and adversarial AUC ≈ 0.5, so a random (not time-based) split is appropriate.</span></li>
+    </ul>
+    <h3><span lang="uz">Qaysi model tanlandi va nima uchun</span><span lang="en">Which model was chosen, and why</span></h3>
+    <p><span lang="uz">{{ ens.uz }}</span><span lang="en">{{ ens.en }}</span></p>
+    <p class="callout"><span lang="uz"><b>Sayt, CSV va notebook bir-biriga mos.</b> Bu yerda ko'rsatilgan model ({{ chosen }}) yakuniy <code>team_{{ team_id }}.csv</code> faylini yaratgan model bilan bir xil (SHA256 <code>{{ sha }}…</code>). Notebook xuddi shu faylni qayta yaratadi, va bu avtomatik tekshiriladi (farq ≤ 1e-6).</span><span lang="en"><b>Website, CSV and notebook agree.</b> The model shown here ({{ chosen }}) is the one that produced the final <code>team_{{ team_id }}.csv</code> (SHA256 <code>{{ sha }}…</code>). The notebook regenerates the same file, and this is checked automatically (difference ≤ 1e-6).</span></p>
   </div>
+</section>
+
+<!-- 7. MODEL PERFORMANCE -->
+<section id="performance" class="later">
+  <div class="text">
+    {{ h2(7, "Model natijalari", "Model performance") }}
+  </div>
+  <dl class="kpis small">
+    <div class="kpi accent"><dt><span lang="uz">Validatsiya ROC-AUC (OOF)</span><span lang="en">Validation ROC-AUC (OOF)</span></dt><dd>{{ m.headline }}</dd></div>
+    <div class="kpi"><dt><span lang="uz">Foldlar bo'yicha</span><span lang="en">Per fold</span></dt><dd>{{ m.fold_mean }} ± {{ m.fold_std }}</dd></div>
+    <div class="kpi"><dt><span lang="uz">Tasodifiy taxmin</span><span lang="en">Random guess</span></dt><dd>0.500</dd></div>
+  </dl>
   <div class="wide">
     <table>
-      <thead><tr><th>Model</th><th><span lang="uz">Fold AUC</span><span lang="en">Fold AUC</span></th><th>OOF AUC</th></tr></thead>
+      <thead><tr><th>Model</th><th><span lang="uz">Fold AUC (o'rtacha ± std)</span><span lang="en">Fold AUC (mean ± std)</span></th><th>OOF AUC</th></tr></thead>
       <tbody>
       {% for r in results %}<tr><td>{{ r.name }}</td><td class="n">{{ r.fold }}</td><td class="n">{{ r.oof }}</td></tr>{% endfor %}
       </tbody>
     </table>
   </div>
-  <p class="text"><span lang="uz">{{ ens.uz }}</span><span lang="en">{{ ens.en }}</span></p>
-  {{ figure(figs.f14_importance) }}
-  <div class="text">
-    <h3><span lang="uz">Ishlamagan narsalar</span><span lang="en">Things that did not work</span></h3>
-    <p><span lang="uz">Boshqa musobaqalar (AMEX, IEEE-CIS, Santander) va AML maqolalaridan g'oyalar oldik. Ko'pchiligi bu ma'lumotda yordam bermadi:</span><span lang="en">We borrowed ideas from other competitions (AMEX, IEEE-CIS, Santander) and AML papers. Most of them did not help on this data:</span></p>
-  </div>
-  <div class="wide">
+  {% for f in perf %}{{ chart(f) }}{% endfor %}
+</section>
+
+<!-- 8. CONCLUSION -->
+<section id="end" class="later text">
+  {{ h2(8, "Xulosa", "Conclusion") }}
+  <h3><span lang="uz">1. Qanday xatti-harakatlar eskalatsiya bilan bog'liq?</span><span lang="en">1. Which financial behaviours are linked to escalation?</span></h3>
+  <p><span lang="uz">Eskalatsiya qilingan mijozlarda mayda bank o'tkazmalari ko'proq, yiriklari kamroq, va ular umuman biroz faolroq (~6%). Kirim/chiqim nisbati, tranzaksiya turlari, tungi va dam olish kuni operatsiyalari, signal oldidan faollik sakrashi esa farq qilmaydi.</span><span lang="en">Escalated customers make more small and fewer large bank transfers, and are somewhat more active overall (~6%). The in/out balance, the type mix, night and weekend activity and any pre-alert spike make no difference.</span></p>
+  <h3><span lang="uz">2. Model ularni qanday tahlil qiladi?</span><span lang="en">2. How does our model use them?</span></h3>
+  <p><span lang="uz">Har bir signal tarixi {{ n.n_features }} ta belgiga umumlashtiriladi (asosan har bir tur va yo'nalish ichidagi miqdor statistikasi). {{ chosen }} bu kuchsiz signallarni birlashtiradi: eng yaxshi bitta belgi ~0.57 AUC beradi, model esa {{ m.headline }}.</span><span lang="en">Each alert's history is summarised into {{ n.n_features }} features (mostly amount statistics within each type and direction). {{ chosen }} combines these weak signals: the best single feature gets ~0.57 AUC, the model {{ m.headline }}.</span></p>
+  <h3><span lang="uz">3. Qanday cheklovlar bor?</span><span lang="en">3. What are the limitations?</span></h3>
+  <ul>
+    <li><span lang="uz">Signal kuchsiz: {{ m.headline }} AUC foydali, lekin mukammal emas; model mutaxassis o'rnini emas, navbatni saralashni qo'llab-quvvatlaydi.</span><span lang="en">The signal is weak: {{ m.headline }} AUC is useful but far from perfect; the model supports prioritising the review queue rather than replacing the specialist.</span></li>
+    <li><span lang="uz">Kontragent va mijoz ID'si yo'q, shuning uchun graf belgilari yo'q. Miqdor standartlashtirilgan indeks.</span><span lang="en">No counterparties or customer IDs, so no graph features. Amounts are a standardised index.</span></li>
+    <li><span lang="uz">Signal oldidagi 3 daqiqalik "portlash" ({{ figs.f04_burst.num }}-rasm, qo'shimcha grafiklarda) generator artefakti bo'lsa kerak.</span><span lang="en">The 3-minute burst before each alert (Fig. {{ figs.f04_burst.num }}, under "More charts") is most likely a data-generator artefact.</span></li>
+    <li><span lang="uz">Ma'lumotlar sintetik; haqiqiy bankda natija boshqacha bo'lishi mumkin.</span><span lang="en">The data are synthetic; results on real bank data may differ.</span></li>
+  </ul>
+  <details class="more">
+    <summary><span lang="uz">Ishlamagan g'oyalar ({{ negatives|length }})</span><span lang="en">Ideas that did not work ({{ negatives|length }})</span></summary>
     <table>
       <thead><tr><th><span lang="uz">G'oya</span><span lang="en">Idea</span></th><th>OOF AUC</th></tr></thead>
       <tbody>{% for r in negatives %}<tr><td>{{ r.name }}</td><td class="n">{{ r.auc }}</td></tr>{% endfor %}</tbody>
     </table>
-  </div>
-</section>
-
-<!-- 10 -->
-<section id="end" class="later text">
-  <h2><span lang="uz">Xulosa</span><span lang="en">Wrap-up</span></h2>
-  <p><span lang="uz">Eskalatsiya signali kuchsiz va juda ko'p belgilar orasida tarqalgan. Eng yaxshi bitta belgi ham AUC 0.58 ga yetmaydi, lekin yuzlab kuchsiz belgilarni birga ishlatgan gradient boosting {{ m.headline }} beradi. Eng aniq ko'ringan narsa: eskalatsiya qilingan mijozlarda mayda bank o'tkazmalari ko'proq, yiriklari kamroq, va ular umuman olganda biroz faolroq (~6%). Tungi operatsiyalar, dam olish kunlari, "kirdi-chiqdi" (pass-through) va strukturalash kabi klassik AML belgilarini tekshirdik, lekin ular bu ma'lumotda ishlamadi.</span>
-  <span lang="en">The escalation signal is weak and spread over a lot of features. No single feature reaches 0.58 AUC, but gradient boosting over hundreds of weak ones gets to {{ m.headline }}. The clearest thing we can point at: escalated customers make more small bank transfers and fewer large ones, and are a bit more active overall (~6%). We checked the classic AML red flags too (night activity, weekends, pass-through, structuring), and none of them worked on this data.</span></p>
-  <p><span lang="uz"><b>Cheklovlar.</b> Kontragent va mijoz ID'si yo'q, shuning uchun graf belgilarini qura olmadik. Miqdor standartlashtirilgan indeks. Signal oldidagi 3 daqiqalik "portlash" generatorning artefakti bo'lsa kerak. GitHub'dagi boshqa jamoalarning ochiq natijalari ham 0.56 va 0.63 orasida, demak shift asosan ma'lumotning o'zida.</span>
-  <span lang="en"><b>Limitations.</b> There are no counterparties or customer IDs, so no graph features. Amounts are a standardised index. The 3-minute burst before each alert is most likely a generator artefact. Other teams' public results on GitHub sit between 0.56 and 0.63, which suggests the ceiling is mostly in the data itself.</span></p>
-  <p><span lang="uz"><b>Vaqt bo'lsa nima qilardik:</b> CoLES kabi o'z-o'zini o'rgatuvchi ketma-ketlik embeddinglari; kontragent ma'lumoti bo'lsa, graf belgilar.</span><span lang="en"><b>With more time we would try</b> self-supervised sequence embeddings (CoLES), and graph features if counterparty data existed.</span></p>
-  <h3><span lang="uz">Qanday qayta ishga tushirish</span><span lang="en">How to reproduce</span></h3>
+  </details>
+  <h3><span lang="uz">Qayta ishga tushirish</span><span lang="en">Reproducibility</span></h3>
 <pre class="flow">uv sync
-uv run python tasks.py all      # audit → eda → features → train → predict → notebook → site</pre>
-  <p><span lang="uz">Yoki bitta mustaqil notebook: <code>{{ notebook_name }}</code> (faqat 5 ta berilgan faylni o'qiydi).</span><span lang="en">Or one self-contained notebook: <code>{{ notebook_name }}</code> (it reads only the 5 provided files).</span>
+uv run python tasks.py all      # audit → features → eda → train → predict → notebook → site</pre>
+  <p><span lang="uz">Yoki bitta mustaqil notebook: <code>{{ notebook_name }}</code> (faqat 5 ta berilgan faylni o'qiydi, seed'lar qotirilgan).</span><span lang="en">Or one self-contained notebook: <code>{{ notebook_name }}</code> (reads only the 5 provided files, fixed seeds).</span>
   {% if repo_url %}<br><a href="{{ repo_url }}">{{ repo_url }}</a>{% endif %}</p>
 </section>
 </main>
-<footer>SignalScope UZ · {{ team_name }} · {{ build_date }}</footer>
+<footer>{{ team_name }} · Financial Alert Intelligence · {{ build_date }}</footer>
 </body>
 </html>

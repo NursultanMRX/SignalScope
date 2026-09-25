@@ -14,11 +14,11 @@
   } catch (e) {}
 }
 </script>
-<title>SignalScope UZ: which alerts get escalated?</title>
-<meta name="description" content="Hackathon write-up: EDA of the alert transaction histories and our escalation model (CV ROC-AUC 0.650). Signallar eskalatsiyasi bo'yicha EDA va model.">
+<title>VisionX: Financial Alert Intelligence</title>
+<meta name="description" content="Predicting which financial-monitoring alerts get escalated: EDA of the transaction histories and a LightGBM model with validation ROC-AUC 0.650. Moliyaviy signallar eskalatsiyasi bo'yicha EDA va model.">
 <meta property="og:type" content="article">
-<meta property="og:title" content="SignalScope UZ: which alerts get escalated?">
-<meta property="og:description" content="What we found in 6 987 663 synthetic transactions, and a model with CV ROC-AUC 0.650.">
+<meta property="og:title" content="VisionX: Financial Alert Intelligence">
+<meta property="og:description" content="EDA of 10 015 238 synthetic transactions and an escalation model with validation ROC-AUC 0.650.">
 <meta property="og:image" content="img/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -34,17 +34,16 @@
 <a class="skip" href="#main"><span lang="uz">Matnga o'tish</span><span lang="en">Skip to text</span></a>
 <header class="top">
   <div class="top-in">
-    <b>SignalScope UZ</b>
+    <b>VisionX</b>
     <nav aria-label="Sections">
-      <a href="#how"><span lang="uz">Yondashuv</span><span lang="en">Approach</span></a>
-      <a href="#data"><span lang="uz">Ma'lumot</span><span lang="en">Data</span></a>
-      <a href="#target"><span lang="uz">Maqsad</span><span lang="en">Target</span></a>
-      <a href="#charts"><span lang="uz">Grafiklar</span><span lang="en">Charts</span></a>
-      <a href="#noticed"><span lang="uz">Kuzatuvlar</span><span lang="en">What we noticed</span></a>
-      <a href="#before"><span lang="uz">Signaldan oldin</span><span lang="en">Before the alert</span></a>
+      <a href="#overview"><span lang="uz">Umumiy</span><span lang="en">Overview</span></a>
+      <a href="#data"><span lang="uz">Ma'lumot</span><span lang="en">Dataset</span></a>
+      <a href="#eda"><span lang="uz">EDA</span><span lang="en">EDA</span></a>
+      <a href="#insights"><span lang="uz">Xulosalar</span><span lang="en">Insights</span></a>
       <a href="#features"><span lang="uz">Belgilar</span><span lang="en">Features</span></a>
       <a href="#model"><span lang="uz">Model</span><span lang="en">Model</span></a>
-      <a href="#end"><span lang="uz">Xulosa</span><span lang="en">Wrap-up</span></a>
+      <a href="#performance"><span lang="uz">Natija</span><span lang="en">Performance</span></a>
+      <a href="#end"><span lang="uz">Yakun</span><span lang="en">Conclusion</span></a>
     </nav>
     <button id="lang-toggle" type="button">EN</button>
     <button id="theme-toggle" type="button">Dark</button>
@@ -52,40 +51,41 @@
 </header>
 
 <main id="main">
-<!-- 1 -->
-<section id="top" class="text">
-  <h1><span lang="uz">Qaysi signallar eskalatsiya qilinadi?</span><span lang="en">Which alerts get escalated?</span></h1>
-  <p class="sub"><span lang="uz">Moliyaviy monitoring xakatoni uchun EDA va model. Jamoa SSUZ7K.</span><span lang="en">EDA and a model for the financial monitoring hackathon. Team SSUZ7K.</span></p>
-  <p><span lang="uz">Monitoring bo'limiga mijozlarning tranzaksiya tarixidan avtomatik signallar keladi. Mutaxassis har birini ko'rib chiqadi: yo rad etadi, yo eskalatsiya qiladi. Bizning vazifa: yashirin test to'plamidagi har bir signal uchun eskalatsiya ehtimolini berish. Baholash ROC-AUC bo'yicha.</span>
-  <span lang="en">A monitoring unit gets automatic alerts generated from customers' transaction histories. A specialist reviews each one and either dismisses it or escalates it. Our job: give every alert in the hidden test set a probability of being escalated. Scoring is ROC-AUC.</span></p>
-  <p class="big"><span lang="uz">Eng yaxshi natijamiz: <mark>CV ROC-AUC 0.650</mark> (5 fold × 3 marta takror; foldlar bo'yicha 0.648 ± 0.013).</span><span lang="en">Our best result: <mark>CV ROC-AUC 0.650</mark> (5 folds × 3 repeats; per fold 0.648 ± 0.013).</span></p>
-  <p><span lang="uz">Rostini aytsak, bu raqam juda baland emas. Quyida nima uchunligini va nimalarni sinab ko'rganimizni yozdik.</span><span lang="en">Honestly, that number is not high. Below we explain why, and what we tried along the way.</span></p>
-  <p class="byline"><span lang="uz">Ma'lumotlar sintetik, haqiqiy mijozlar yo'q. Oxirgi yangilanish: 2026-09-24.</span><span lang="en">The data are synthetic, no real customers. Last updated 2026-09-24.</span></p>
+<!-- 1. OVERVIEW -->
+<section id="overview" class="hero">
+  <p class="eyebrow"><span lang="uz">Moliyaviy monitoring xakatoni · FinTech / AI</span><span lang="en">Financial monitoring hackathon · FinTech / AI</span></p>
+  <h1>VisionX <span class="dash">—</span> Financial Alert Intelligence</h1>
+  <p class="sub"><span lang="uz">Moliyaviy signallar eskalatsiyasini machine learning yordamida bashorat qilish.</span><span lang="en">Predicting financial alert escalation through machine learning.</span></p>
+  <p class="text"><span lang="uz">Monitoring bo'limiga mijozlarning tranzaksiya tarixidan avtomatik signallar keladi. Mutaxassis har birini yo rad etadi, yo eskalatsiya qiladi. Maqsadimiz: yashirin test to'plamidagi har bir signal uchun eskalatsiya ehtimolini berish (baholash: ROC-AUC).</span><span lang="en">Automatic alerts are raised from customers' transaction histories, and a specialist either dismisses or escalates each one. Our goal: give every alert in the hidden test set a probability of escalation (scored by ROC-AUC).</span></p>
+  <dl class="kpis">
+    <div class="kpi"><dt><span lang="uz">Train signallar</span><span lang="en">Training signals</span></dt><dd>14 000</dd></div>
+    <div class="kpi"><dt><span lang="uz">Test signallar</span><span lang="en">Test signals</span></dt><dd>6 000</dd></div>
+    <div class="kpi"><dt><span lang="uz">Tranzaksiyalar</span><span lang="en">Transactions</span></dt><dd>10 015 238</dd></div>
+    <div class="kpi"><dt><span lang="uz">Eskalatsiya ulushi</span><span lang="en">Escalation rate</span></dt><dd>17.2%</dd></div>
+    <div class="kpi"><dt><span lang="uz">Yakuniy model</span><span lang="en">Final model</span></dt><dd>LightGBM</dd></div>
+    <div class="kpi accent"><dt><span lang="uz">Validatsiya ROC-AUC</span><span lang="en">Validation ROC-AUC</span></dt><dd>0.650</dd></div>
+  </dl>
+  <p class="byline"><span lang="uz">Barcha raqamlar bizning koddan olingan (5 fold × 3 takror CV). Ma'lumotlar sintetik, haqiqiy mijozlar yo'q; saytda xom tranzaksiya yoki signal ID'lari e'lon qilinmagan. Yangilangan: 2026-09-25.</span><span lang="en">Every number comes from our code (5-fold × 3-repeat CV). The data are synthetic, with no real customers; no raw transactions or signal IDs are published here. Updated 2026-09-25.</span></p>
 </section>
 
-<!-- 2 -->
-<section id="how" class="text">
-  <h2><span lang="uz">Qanday ishladik</span><span lang="en">How we approached it</span></h2>
-<pre class="flow">raw files → audit → EDA → features (1 row / alert) → CV 5×3 → LightGBM · XGBoost · CatBoost · LogReg → blend check → submission</pre>
-  <p><span lang="uz">Avval ma'lumotni tekshirdik (dublikatlar, bo'sh qiymatlar, signaldan keyingi tranzaksiyalar). Keyin har bir signal uchun faqat signal sanasidan <em>oldingi</em> tranzaksiyalardan 626 ta belgi yig'dik. Modellarni bir xil CV bo'linishlarida solishtirdik va biror g'oyani faqat CV natijasini yaxshilasa qoldirdik. Hamma seed'lar qotirilgan, butun jarayon bitta buyruq bilan qaytadan ishlaydi.</span>
-  <span lang="en">First we checked the data (duplicates, nulls, transactions after the alert). Then for each alert we built 626 features using only transactions from <em>before</em> the alert date. All models were compared on the same CV splits, and an idea stayed in only if it improved the CV score. Seeds are fixed and the whole thing re-runs with one command.</span></p>
-</section>
-
-<!-- 3 -->
+<!-- 2. DATASET OVERVIEW -->
 <section id="data" class="later">
   <div class="text">
-    <h2><span lang="uz">Ma'lumotlar</span><span lang="en">The data</span></h2>
-    <p><span lang="uz">Beshta fayl: signallar (train/test), ularning tranzaksiyalari (train/test) va namuna javob fayli.</span><span lang="en">Five files: alerts (train/test), their transactions (train/test) and a sample submission.</span></p>
+    <h2><span class="num">2</span><span lang="uz">Ma&#39;lumotlar</span><span lang="en">Dataset overview</span></h2>
+    <p><span lang="uz">Beshta fayl: signallar (train/test), ularning tranzaksiyalari (train/test) va namuna javob fayli. Har bir signalga uning mijozining signalgacha bo'lgan tranzaksiya tarixi biriktirilgan.</span><span lang="en">Five files: alerts (train/test), their transactions (train/test) and a sample submission. Each alert comes with its customer's transaction history up to the alert.</span></p>
   </div>
   <div class="two">
     <div class="wide">
       <table>
-        <thead><tr><th><span lang="uz">Fayl</span><span lang="en">File</span></th><th><span lang="uz">Qatorlar</span><span lang="en">Rows</span></th></tr></thead>
+        <thead><tr><th><span lang="uz">Ko'rsatkich</span><span lang="en">Indicator</span></th><th><span lang="uz">Qiymat</span><span lang="en">Value</span></th></tr></thead>
         <tbody>
-          <tr><td><code>train_signals.csv</code></td><td class="n">14 000</td></tr>
-          <tr><td><code>test_signals.csv</code></td><td class="n">6 000</td></tr>
-          <tr><td><code>train_transactions.parquet</code></td><td class="n">6 987 663</td></tr>
-          <tr><td><code>test_transactions.parquet</code></td><td class="n">3 027 575</td></tr>
+          <tr><td><span lang="uz">Train signallar</span><span lang="en">Training signals</span></td><td class="n">14 000</td></tr>
+          <tr><td><span lang="uz">Test signallar</span><span lang="en">Test signals</span></td><td class="n">6 000</td></tr>
+          <tr><td><span lang="uz">Tarixiy tranzaksiyalar (train / test)</span><span lang="en">Historical transactions (train / test)</span></td><td class="n">6 987 663 / 3 027 575</td></tr>
+          <tr><td><span lang="uz">Eskalatsiya ulushi</span><span lang="en">Escalation rate</span></td><td class="n">17.2%</td></tr>
+          <tr><td><span lang="uz">Signalga tranzaksiya (o'rtacha / median)</span><span lang="en">Transactions per alert (mean / median)</span></td><td class="n">499 / 461</td></tr>
+          <tr><td><span lang="uz">Signal sanalari</span><span lang="en">Alert dates</span></td><td class="n">2025-01-01 … 2026-12-31</td></tr>
+          <tr><td><span lang="uz">Bo'sh qiymat / takroriy ID / "yetim" tranzaksiya</span><span lang="en">Nulls / duplicate IDs / orphan transactions</span></td><td class="n">0 / 0 / 0</td></tr>
         </tbody>
       </table>
       <p><small><span lang="uz">Tranzaksiya ustunlari: vaqt, <code>kirim</code>/<code>chiqim</code>, tur (<code>karta</code>, <code>bank_otkazmasi</code>, <code>naqd</code>, <code>xalqaro</code>) va <code>miqdor_indeksi</code> (standartlashtirilgan miqdor, so'm emas).</span><span lang="en">Transaction columns: timestamp, <code>kirim</code>/<code>chiqim</code> (in/out), type (<code>karta</code> card, <code>bank_otkazmasi</code> transfer, <code>naqd</code> cash, <code>xalqaro</code> international) and <code>miqdor_indeksi</code>, a standardised size index rather than money.</span></small></p>
@@ -112,23 +112,24 @@
     </div>
   </div>
   <div class="text">
-    <p><span lang="uz">Bir signalga o'rtacha 499 ta tranzaksiya to'g'ri keladi (median 461), odatda signalgacha bo'lgan oxirgi ~180 kun. Signal sanalari train'da ham, test'da ham 2025-01-01 dan 2026-12-31 gacha. Bo'sh qiymat, takroriy ID yoki "yetim" tranzaksiya topilmadi.</span>
-    <span lang="en">An alert has 499 transactions on average (median 461), usually covering the last ~180 days before the alert. Alert dates run from 2025-01-01 to 2026-12-31 in both train and test. We found no nulls, no duplicate IDs and no orphan transactions.</span></p>
-    <h3><span lang="uz">Sizib chiqish (leakage) bilan ehtiyot bo'ldik</span><span lang="en">Being careful about leakage</span></h3>
+    <h3><span lang="uz">Kelajak ma'lumotidan foydalanmaslik (leakage)</span><span lang="en">No information from the future (leakage)</span></h3>
     <ul>
-      <li><span lang="uz">Signal sanasida vaqt yo'q, shuning uchun signal momentini o'sha kunning 00:00 deb oldik. Shundan keyingi 3 934 (train) va 1 456 (test) tranzaksiyani belgilardan chiqarib tashladik.</span><span lang="en">The alert date has no time, so we treat the alert as happening at 00:00 that day. The 3 934 (train) and 1 456 (test) transactions at or after that moment are not used.</span></li>
-      <li><span lang="uz"><code>signal_id</code> modelga berilmaydi. Tekshirib ko'rdik: ID tartibi bilan maqsad orasidagi AUC 0.498, ya'ni bog'liqlik yo'q.</span><span lang="en"><code>signal_id</code> is never given to the model. We checked anyway: ID order vs target gives AUC 0.498, i.e. nothing.</span></li>
-      <li><span lang="uz">Train va test'ni ajrata oladigan model qurdik (adversarial validation): AUC 0.502. Demak test oddiy tasodifiy tanlanma.</span><span lang="en">We trained a model to tell train from test (adversarial validation): AUC 0.502. So the test set is just a random sample.</span></li>
+      <li><span lang="uz">Signal sanasida vaqt yo'q, shuning uchun signalni o'sha kunning 00:00 deb oldik. Undan keyingi 3 934 (train) va 1 456 (test) tranzaksiya belgilarda ishlatilmaydi.</span><span lang="en">The alert date has no time, so we treat the alert as 00:00 that day. The 3 934 (train) and 1 456 (test) transactions at or after that moment are never used.</span></li>
+      <li><span lang="uz"><code>signal_id</code> modelga berilmaydi (ID tartibi va maqsad: AUC 0.498, bog'liqlik yo'q).</span><span lang="en"><code>signal_id</code> is never a model input (ID order vs target: AUC 0.498, no relation).</span></li>
+      <li><span lang="uz">Train va test'ni ajratishga uringan model (adversarial validation) AUC 0.502 oldi: test oddiy tasodifiy tanlanma.</span><span lang="en">A model trying to tell train from test (adversarial validation) scored AUC 0.502: the test set is an ordinary random sample.</span></li>
     </ul>
   </div>
 </section>
 
-<!-- 4 -->
-<section id="target" class="later">
+<!-- 3. EDA -->
+<section id="eda" class="later">
   <div class="text">
-    <h2><span lang="uz">Maqsad o'zgaruvchisi</span><span lang="en">The target</span></h2>
-    <p><span lang="uz">Train'dagi 14 000 signalning 17.2% qismi eskalatsiya qilingan. Oylar bo'yicha ulush biroz sakraydi, lekin bu shovqin darajasida.</span><span lang="en">17.2% of the 14 000 training alerts were escalated. The monthly rate wobbles a bit, but within noise.</span></p>
+    <h2><span class="num">3</span><span lang="uz">Ma&#39;lumotlar tahlili (EDA)</span><span lang="en">Exploratory data analysis</span></h2>
+    <p><span lang="uz">Olti asosiy grafik; har birining tepasida bir-ikki jumlalik xulosa. Grafiklar interaktiv va faqat yig'ma raqamlardan chizilgan.</span><span lang="en">Six key charts, each with a one or two-sentence takeaway above it. Charts are interactive and drawn from aggregated numbers only.</span></p>
   </div>
+  <div class="chart">
+  <h3><span lang="uz">Maqsad taqsimoti va vaqt bo&#39;yicha ulush</span><span lang="en">Target balance and rate over time</span></h3>
+  <p class="lead"><span lang="uz">Signallarning 17.2% qismi eskalatsiya qilinadi: sinflar nomutanosib, shuning uchun aniqlik (accuracy) emas, ROC-AUC ishlatamiz.</span><span lang="en">17.2% of alerts are escalated. The classes are imbalanced, which is why we score with ROC-AUC, not accuracy.</span></p>
   <figure class="fig" id="f01_target">
   <div class="plot" data-fig="f01_target" role="img" aria-label="Bar chart of class counts and a line chart of monthly escalation rate with a 95% confidence band.">
     <img class="fallback" src="img/f01_target.png" alt="Bar chart of class counts and a line chart of monthly escalation rate with a 95% confidence band." loading="lazy" width="1500" height="630">
@@ -136,120 +137,162 @@
   <figcaption><b><span lang="uz">1-rasm.</span><span lang="en">Fig. 1.</span></b>
     <span lang="uz">Chapda: sinflar. O&#39;ngda: oylik eskalatsiya ulushi, soya 95% ishonch oralig&#39;i. Oylar orasidagi farq tasodifiy darajada (χ² p = 0.09), shuning uchun oy yoki hafta kunini belgi qilib qo&#39;shmadik.</span><span lang="en">Left: class counts. Right: monthly escalation rate with a 95% band. The month-to-month differences look like noise (chi-square p = 0.09), so we did not add month or weekday as features.</span></figcaption>
 </figure>
-</section>
-
-<!-- 5 -->
-<section id="charts" class="later">
-  <div class="text">
-    <h2><span lang="uz">Grafiklar</span><span lang="en">Charts</span></h2>
-    <p><span lang="uz">Hamma grafiklar interaktiv (sichqonchani olib boring). Ular faqat yig'ma raqamlardan chizilgan, bitta ham xom tranzaksiya saytga chiqmagan.</span><span lang="en">All charts are interactive (hover over them). They are drawn from aggregated numbers only; no raw transactions are published here.</span></p>
-  </div>
-  <figure class="fig" id="f02_history">
-  <div class="plot" data-fig="f02_history" role="img" aria-label="Overlaid histograms of transaction count and history length for escalated and dismissed alerts.">
-    <img class="fallback" src="img/f02_history.png" alt="Overlaid histograms of transaction count and history length for escalated and dismissed alerts." loading="lazy" width="1500" height="630">
-  </div>
-  <figcaption><b><span lang="uz">2-rasm.</span><span lang="en">Fig. 2.</span></b>
-    <span lang="uz">Eskalatsiya qilinganlarda tranzaksiya biroz ko&#39;proq (median 453 ta, rad etilganlarda 417). Farq bor, lekin kichik. Deyarli hamma tarix signaldan oldingi ~180 kunni qamraydi.</span><span lang="en">Escalated alerts have slightly more transactions (median 453 vs 417). Real, but small. Nearly every history covers about 180 days before the alert.</span></figcaption>
-</figure><figure class="fig" id="f04_burst">
-  <div class="plot" data-fig="f04_burst" role="img" aria-label="Histogram of burst timestamps in the last 3 minutes and overlaid histograms of burst size by class.">
-    <img class="fallback" src="img/f04_burst.png" alt="Histogram of burst timestamps in the last 3 minutes and overlaid histograms of burst size by class." loading="lazy" width="1500" height="630">
-  </div>
-  <figcaption><b><span lang="uz">3-rasm.</span><span lang="en">Fig. 3.</span></b>
-    <span lang="uz">Buni tasodifan topdik: barcha tranzaksiyalarning 7.9% qismi signal sanasidan oldingi kechada 23:57 va 23:59 orasida turibdi (signallarning 99% qismida, har birida median 31 ta). Bu generator artefakti bo&#39;lsa kerak. Uni alohida belgilar sifatida hisobladik, CV biroz yaxshilandi (+0.007).</span><span lang="en">We found this by accident: 7.9% of all transactions sit between 23:57 and 23:59 on the evening before the alert date (99% of alerts, median 31 each). Probably an artefact of the data generator. We summarise it as its own feature group, which helped CV a little (+0.007).</span></figcaption>
-</figure><figure class="fig" id="f05_direction">
+</div><div class="chart">
+  <h3><span lang="uz">Kirim va chiqim</span><span lang="en">Incoming vs outgoing</span></h3>
+  <p class="lead"><span lang="uz">Kirim va chiqim nisbati ikkala sinfda deyarli bir xil: yo&#39;nalishning o&#39;zi eskalatsiyani tushuntirmaydi.</span><span lang="en">Incoming vs outgoing balance is almost identical for both classes: direction alone does not explain escalation.</span></p>
+  <figure class="fig" id="f05_direction">
   <div class="plot" data-fig="f05_direction" role="img" aria-label="Box plots of incoming share and normalised net flow by class.">
     <img class="fallback" src="img/f05_direction.png" alt="Box plots of incoming share and normalised net flow by class." loading="lazy" width="1500" height="630">
   </div>
-  <figcaption><b><span lang="uz">4-rasm.</span><span lang="en">Fig. 4.</span></b>
+  <figcaption><b><span lang="uz">2-rasm.</span><span lang="en">Fig. 2.</span></b>
     <span lang="uz">Kirim ulushi va sof oqim ikkala sinfda deyarli bir xil. Kutgandik bu muhim bo&#39;ladi, bo&#39;lmadi.</span><span lang="en">Incoming share and net flow look almost the same for both classes. We expected these to matter; they did not.</span></figcaption>
-</figure><figure class="fig" id="f06_types">
+</figure>
+</div><div class="chart">
+  <h3><span lang="uz">Tranzaksiya turlari</span><span lang="en">Transaction types</span></h3>
+  <p class="lead"><span lang="uz">Tranzaksiya turlari tarkibi ham bir xil (Cramér V = 0.0035). Muhimi turning o&#39;zi emas, har bir tur ichidagi miqdorlar.</span><span lang="en">The type mix is the same too (Cramér&#39;s V = 0.0035). What matters is not the type itself but the amounts within each type.</span></p>
+  <figure class="fig" id="f06_types">
   <div class="plot" data-fig="f06_types" role="img" aria-label="Grouped bar chart of transaction type shares by class and a heatmap of type-by-direction lift.">
     <img class="fallback" src="img/f06_types.png" alt="Grouped bar chart of transaction type shares by class and a heatmap of type-by-direction lift." loading="lazy" width="1500" height="660">
   </div>
-  <figcaption><b><span lang="uz">5-rasm.</span><span lang="en">Fig. 5.</span></b>
+  <figcaption><b><span lang="uz">3-rasm.</span><span lang="en">Fig. 3.</span></b>
     <span lang="uz">Tur tarkibi ham ikkala sinfda bir xil. O&#39;ngdagi jadval: eskalatsiya qilinganlardagi ulush / rad etilganlardagi ulush. Hammasi 1 atrofida.</span><span lang="en">The type mix is the same for both classes too. Right panel: share among escalated divided by share among dismissed. Everything is close to 1.</span></figcaption>
-</figure><figure class="fig" id="f07_amount_ratio">
+</figure>
+</div><div class="chart">
+  <h3><span lang="uz">Miqdor taqsimoti: eskalatsiya ÷ rad</span><span lang="en">Amount distribution: escalated ÷ dismissed</span></h3>
+  <p class="lead"><span lang="uz">Eng aniq farq: eskalatsiya qilinganlarda mayda bank o&#39;tkazmalari ko&#39;proq, yiriklari kamroq.</span><span lang="en">The clearest difference: escalated alerts have more small and fewer large bank transfers.</span></p>
+  <figure class="fig" id="f07_amount_ratio">
   <div class="plot" data-fig="f07_amount_ratio" role="img" aria-label="Line chart of the escalated-to-dismissed density ratio across amount bins for card, transfer and cash.">
     <img class="fallback" src="img/f07_amount_ratio.png" alt="Line chart of the escalated-to-dismissed density ratio across amount bins for card, transfer and cash." loading="lazy" width="1500" height="630">
   </div>
-  <figcaption><b><span lang="uz">6-rasm.</span><span lang="en">Fig. 6.</span></b>
+  <figcaption><b><span lang="uz">4-rasm.</span><span lang="en">Fig. 4.</span></b>
     <span lang="uz">Bizningcha eng qiziq grafik. Har bir miqdor oralig&#39;ida eskalatsiya qilinganlar zichligini rad etilganlarnikiga bo&#39;ldik. Bank o&#39;tkazmalarida chiziq pastga tushadi: mayda o&#39;tkazmalar eskalatsiyada ko&#39;proq, yiriklari kamroq. Kartada ham shunga o&#39;xshash, naqd pulda farq yo&#39;q.</span><span lang="en">Our favourite chart. For each amount bin we divided the escalated density by the dismissed one. For bank transfers the line slopes down: small transfers are over-represented among escalated alerts, large ones under-represented. Cards show a weaker version; cash shows nothing.</span></figcaption>
-</figure><figure class="fig" id="f08_amount_types">
-  <div class="plot" data-fig="f08_amount_types" role="img" aria-label="Grouped box plots of amount quantiles by transaction type and class.">
-    <img class="fallback" src="img/f08_amount_types.png" alt="Grouped box plots of amount quantiles by transaction type and class." loading="lazy" width="1500" height="630">
-  </div>
-  <figcaption><b><span lang="uz">7-rasm.</span><span lang="en">Fig. 7.</span></b>
-    <span lang="uz">Miqdor darajasi turga qarab juda farq qiladi (xalqaro &gt; naqd &gt; bank &gt; karta). Shuning uchun miqdor statistikalarini har bir tur ichida alohida hisobladik.</span><span lang="en">Amount level depends heavily on type (international &gt; cash &gt; transfer &gt; card), so we compute amount statistics separately inside each type.</span></figcaption>
-</figure><figure class="fig" id="f10_time_of_day">
+</figure>
+</div><div class="chart">
+  <h3><span lang="uz">Kun soati va hafta kuni</span><span lang="en">Hour of day and weekday</span></h3>
+  <p class="lead"><span lang="uz">Kun soati va hafta kuni bo&#39;yicha farq yo&#39;q, shuning uchun vaqt belgilarini modeldan chiqardik.</span><span lang="en">No difference by hour or weekday, so we left time-of-day features out of the model.</span></p>
+  <figure class="fig" id="f10_time_of_day">
   <div class="plot" data-fig="f10_time_of_day" role="img" aria-label="Stacked bar chart of transactions per hour split into history and burst, and weekday share by class.">
     <img class="fallback" src="img/f10_time_of_day.png" alt="Stacked bar chart of transactions per hour split into history and burst, and weekday share by class." loading="lazy" width="1500" height="630">
   </div>
-  <figcaption><b><span lang="uz">8-rasm.</span><span lang="en">Fig. 8.</span></b>
+  <figcaption><b><span lang="uz">5-rasm.</span><span lang="en">Fig. 5.</span></b>
     <span lang="uz">Soatlar bo&#39;yicha taqsimot deyarli tekis, bu sintetik ma&#39;lumotga xos. 23-soatdagi ustun faqat 3 daqiqalik portlash hisobiga. Hafta kunlari ham ikkala sinfda bir xil.</span><span lang="en">Transactions are spread almost evenly over the day, which is typical for synthetic data. The 23:00 bar is entirely the 3-minute burst. Weekdays look the same for both classes.</span></figcaption>
-</figure><figure class="fig" id="f11_univariate">
-  <div class="plot" data-fig="f11_univariate" role="img" aria-label="Horizontal bar chart of univariate AUC for the top 25 features and a Spearman correlation heatmap.">
-    <img class="fallback" src="img/f11_univariate.png" alt="Horizontal bar chart of univariate AUC for the top 25 features and a Spearman correlation heatmap." loading="lazy" width="1500" height="930">
-  </div>
-  <figcaption><b><span lang="uz">9-rasm.</span><span lang="en">Fig. 9.</span></b>
-    <span lang="uz">Har bir belgining o&#39;zi qanchalik ajratadi. Eng yaxshisi (bank_otkazmasi_chiqim_mean) ham atigi 0.574. To&#39;q sariq = eskalatsiya bilan musbat bog&#39;liq. O&#39;ngda: kuchli belgilar bir-biri bilan qattiq korrelyatsiyalangan.</span><span lang="en">How well each feature separates the classes on its own. Even the best one (bank_otkazmasi_chiqim_mean) only gets 0.574. Orange = positively related to escalation. Right: the strong features are heavily correlated with each other.</span></figcaption>
-</figure><figure class="fig" id="f12_drift">
-  <div class="plot" data-fig="f12_drift" role="img" aria-label="Four overlaid histograms comparing train and test distributions of the strongest features.">
-    <img class="fallback" src="img/f12_drift.png" alt="Four overlaid histograms comparing train and test distributions of the strongest features." loading="lazy" width="1500" height="540">
-  </div>
-  <figcaption><b><span lang="uz">10-rasm.</span><span lang="en">Fig. 10.</span></b>
-    <span lang="uz">Train va test taqsimotlari ustma-ust tushadi (eng katta KS = 0.022).</span><span lang="en">Train and test distributions overlap (largest KS = 0.022).</span></figcaption>
 </figure>
-</section>
-
-<!-- 6 -->
-<section id="noticed" class="later text">
-  <h2><span lang="uz">Tranzaksiya tarixidan nimani ko'rdik</span><span lang="en">What we noticed in the transaction history</span></h2>
-  <ol class="notes">
-    
-    <li><span lang="uz">Eskalatsiya qilinganlarda mayda bank o&#39;tkazmalari ko&#39;proq, yiriklari kamroq. Ma&#39;lumotdagi eng aniq signal shu.</span><span lang="en">Escalated alerts have more small and fewer large bank transfers. This is the clearest signal in the data.</span><span class="why">median bank-transfer mean 0.06 vs 0.21, Cliff&#39;s δ = -0.131, Mann-Whitney p = 7e-24. Fig. 6.</span></li>
-    
-    <li><span lang="uz">Ular umuman olganda biroz faolroq, taxminan 6%, va bu butun 180 kun davomida saqlanadi.</span><span lang="en">They are a bit more active overall, about 6%, and it holds over the whole 180 days.</span><span class="why">volume ratio 1.062; n_tx Cliff&#39;s δ = 0.062. Fig. 11.</span></li>
-    
-    <li><span lang="uz">Signal oldidan &#34;sakrash&#34; yo&#39;q. Buni ko&#39;p tekshirdik, chunki birinchi gipotezamiz shu edi.</span><span lang="en">There is no spike right before the alert. We checked this a lot because it was our first hypothesis.</span><span class="why">largest |Cliff&#39;s δ| over 1 to 90-day windows = 0.021. Fig. 12.</span></li>
-    
-    <li><span lang="uz">Tranzaksiyalarning bir qismi signal sanasidan oldingi kechaning oxirgi 3 daqiqasiga to&#39;plangan.</span><span lang="en">A chunk of transactions is squeezed into the last 3 minutes before midnight of the alert date.</span><span class="why">7.9% of rows, 99% of alerts. Fig. 3.</span></li>
-    
-    <li><span lang="uz">Tur va yo&#39;nalish (kirim/chiqim) tarkibi ikkala sinfda deyarli bir xil.</span><span lang="en">Type and direction mix is basically the same for both classes.</span><span class="why">transaction-level Cramér&#39;s V = 0.0035. Figs. 4, 5.</span></li>
-    
-    <li><span lang="uz">Tungi va dam olish kuni operatsiyalari farq qilmaydi.</span><span lang="en">Night-time and weekend activity make no difference.</span><span class="why">ablation: time-pattern group ΔAUC ≈ 0. Fig. 8, Fig. 13.</span></li>
-    
-    <li><span lang="uz">Bitta belgi bilan ish bitmaydi: hech biri AUC 0.58 dan oshmaydi.</span><span lang="en">No single feature does the job: none of them goes above 0.58 AUC.</span><span class="why">26 features above 0.55. Fig. 9.</span></li>
-    
-  </ol>
-</section>
-
-<!-- 7 -->
-<section id="before" class="later">
-  <div class="text">
-    <h2><span lang="uz">Signaldan oldin: eskalatsiya va rad etilganlar</span><span lang="en">Before the alert: escalated vs dismissed</span></h2>
-    <p><span lang="uz">Biz "signal oldidan faollik keskin oshadi" degan gipotezadan boshlagandik. Ma'lumot buni tasdiqlamadi.</span><span lang="en">We started with the hypothesis that activity spikes right before an escalated alert. The data did not back that up.</span></p>
-  </div>
+</div><div class="chart">
+  <h3><span lang="uz">Signalgacha faollik (hodisa vaqti)</span><span lang="en">Activity aligned to the alert (event time)</span></h3>
+  <p class="lead"><span lang="uz">Eskalatsiya qilinganlar butun 180 kun davomida ~6% faolroq, lekin signal oldidan sakrash yo&#39;q.</span><span lang="en">Escalated customers are ~6% more active over the whole 180 days, but there is no spike before the alert.</span></p>
   <figure class="fig" id="f03_event_time">
   <div class="plot" data-fig="f03_event_time" role="img" aria-label="Line chart of mean daily transactions per alert over the 180 days before the alert, with 95% bands.">
     <img class="fallback" src="img/f03_event_time.png" alt="Line chart of mean daily transactions per alert over the 180 days before the alert, with 95% bands." loading="lazy" width="1500" height="630">
   </div>
-  <figcaption><b><span lang="uz">11-rasm.</span><span lang="en">Fig. 11.</span></b>
+  <figcaption><b><span lang="uz">6-rasm.</span><span lang="en">Fig. 6.</span></b>
     <span lang="uz">Signalgacha har kuni o&#39;rtacha nechta tranzaksiya. Eskalatsiya qilinganlar butun davr davomida ~6% faolroq, lekin egri chiziq shakli bir xil va signal oldidan sakrash yo&#39;q. Qizig&#39;i, faollik signalga yaqinlashgan sari kamayadi.</span><span lang="en">Average transactions per day before the alert. Escalated customers are about 6% more active throughout, but the curves have the same shape and there is no spike before the alert. Oddly, activity drops as the alert gets closer.</span></figcaption>
 </figure>
+</div>
+  <details class="more">
+    <summary><span lang="uz">Qo'shimcha grafiklar (6)</span><span lang="en">More charts (6)</span></summary>
+    <div class="chart">
+  <h3><span lang="uz">Tarix hajmi: eskalatsiya va rad etilganlar</span><span lang="en">History size: escalated vs dismissed</span></h3>
+  
+  <figure class="fig" id="f02_history">
+  <div class="plot" data-fig="f02_history" role="img" aria-label="Overlaid histograms of transaction count and history length for escalated and dismissed alerts.">
+    <img class="fallback" src="img/f02_history.png" alt="Overlaid histograms of transaction count and history length for escalated and dismissed alerts." loading="lazy" width="1500" height="630">
+  </div>
+  <figcaption><b><span lang="uz">7-rasm.</span><span lang="en">Fig. 7.</span></b>
+    <span lang="uz">Eskalatsiya qilinganlarda tranzaksiya biroz ko&#39;proq (median 453 ta, rad etilganlarda 417). Farq bor, lekin kichik. Deyarli hamma tarix signaldan oldingi ~180 kunni qamraydi.</span><span lang="en">Escalated alerts have slightly more transactions (median 453 vs 417). Real, but small. Nearly every history covers about 180 days before the alert.</span></figcaption>
+</figure>
+</div><div class="chart">
+  <h3><span lang="uz">Signal oldidan 3 daqiqalik &#39;portlash&#39;</span><span lang="en">The 3-minute pre-alert burst</span></h3>
+  
+  <figure class="fig" id="f04_burst">
+  <div class="plot" data-fig="f04_burst" role="img" aria-label="Histogram of burst timestamps in the last 3 minutes and overlaid histograms of burst size by class.">
+    <img class="fallback" src="img/f04_burst.png" alt="Histogram of burst timestamps in the last 3 minutes and overlaid histograms of burst size by class." loading="lazy" width="1500" height="630">
+  </div>
+  <figcaption><b><span lang="uz">8-rasm.</span><span lang="en">Fig. 8.</span></b>
+    <span lang="uz">Buni tasodifan topdik: barcha tranzaksiyalarning 7.9% qismi signal sanasidan oldingi kechada 23:57 va 23:59 orasida turibdi (signallarning 99% qismida, har birida median 31 ta). Bu generator artefakti bo&#39;lsa kerak. Uni alohida belgilar sifatida hisobladik, CV biroz yaxshilandi (+0.007).</span><span lang="en">We found this by accident: 7.9% of all transactions sit between 23:57 and 23:59 on the evening before the alert date (99% of alerts, median 31 each). Probably an artefact of the data generator. We summarise it as its own feature group, which helped CV a little (+0.007).</span></figcaption>
+</figure>
+</div><div class="chart">
+  <h3><span lang="uz">Tur bo&#39;yicha miqdor</span><span lang="en">Amount by type</span></h3>
+  
+  <figure class="fig" id="f08_amount_types">
+  <div class="plot" data-fig="f08_amount_types" role="img" aria-label="Grouped box plots of amount quantiles by transaction type and class.">
+    <img class="fallback" src="img/f08_amount_types.png" alt="Grouped box plots of amount quantiles by transaction type and class." loading="lazy" width="1500" height="630">
+  </div>
+  <figcaption><b><span lang="uz">9-rasm.</span><span lang="en">Fig. 9.</span></b>
+    <span lang="uz">Miqdor darajasi turga qarab juda farq qiladi (xalqaro &gt; naqd &gt; bank &gt; karta). Shuning uchun miqdor statistikalarini har bir tur ichida alohida hisobladik.</span><span lang="en">Amount level depends heavily on type (international &gt; cash &gt; transfer &gt; card), so we compute amount statistics separately inside each type.</span></figcaption>
+</figure>
+</div><div class="chart">
+  <h3><span lang="uz">Signal oldidagi oynalar</span><span lang="en">Pre-alert windows vs baseline</span></h3>
+  
   <figure class="fig" id="f09_windows">
   <div class="plot" data-fig="f09_windows" role="img" aria-label="Line chart of median window-to-history activity ratio for 1 to 90 day windows by class.">
     <img class="fallback" src="img/f09_windows.png" alt="Line chart of median window-to-history activity ratio for 1 to 90 day windows by class." loading="lazy" width="1500" height="630">
   </div>
-  <figcaption><b><span lang="uz">12-rasm.</span><span lang="en">Fig. 12.</span></b>
+  <figcaption><b><span lang="uz">10-rasm.</span><span lang="en">Fig. 10.</span></b>
     <span lang="uz">Oxirgi 1 dan 90 kungacha bo&#39;lgan faollik tarixiy o&#39;rtachaga nisbatan. Ikkala sinf deyarli bir xil (eng katta Cliff δ = 0.021).</span><span lang="en">Activity in the last 1 to 90 days relative to the whole history. Both classes look nearly the same (largest Cliff&#39;s delta = 0.021).</span></figcaption>
 </figure>
+</div><div class="chart">
+  <h3><span lang="uz">Belgilar kuchi (bir o&#39;zgaruvchili)</span><span lang="en">Feature strength (univariate)</span></h3>
+  
+  <figure class="fig" id="f11_univariate">
+  <div class="plot" data-fig="f11_univariate" role="img" aria-label="Horizontal bar chart of univariate AUC for the top 25 features and a Spearman correlation heatmap.">
+    <img class="fallback" src="img/f11_univariate.png" alt="Horizontal bar chart of univariate AUC for the top 25 features and a Spearman correlation heatmap." loading="lazy" width="1500" height="930">
+  </div>
+  <figcaption><b><span lang="uz">11-rasm.</span><span lang="en">Fig. 11.</span></b>
+    <span lang="uz">Har bir belgining o&#39;zi qanchalik ajratadi. Eng yaxshisi (bank_otkazmasi_chiqim_mean) ham atigi 0.574. To&#39;q sariq = eskalatsiya bilan musbat bog&#39;liq. O&#39;ngda: kuchli belgilar bir-biri bilan qattiq korrelyatsiyalangan.</span><span lang="en">How well each feature separates the classes on its own. Even the best one (bank_otkazmasi_chiqim_mean) only gets 0.574. Orange = positively related to escalation. Right: the strong features are heavily correlated with each other.</span></figcaption>
+</figure>
+</div><div class="chart">
+  <h3><span lang="uz">Train va test taqsimoti</span><span lang="en">Train vs test distributions</span></h3>
+  
+  <figure class="fig" id="f12_drift">
+  <div class="plot" data-fig="f12_drift" role="img" aria-label="Four overlaid histograms comparing train and test distributions of the strongest features.">
+    <img class="fallback" src="img/f12_drift.png" alt="Four overlaid histograms comparing train and test distributions of the strongest features." loading="lazy" width="1500" height="540">
+  </div>
+  <figcaption><b><span lang="uz">12-rasm.</span><span lang="en">Fig. 12.</span></b>
+    <span lang="uz">Train va test taqsimotlari ustma-ust tushadi (eng katta KS = 0.022).</span><span lang="en">Train and test distributions overlap (largest KS = 0.022).</span></figcaption>
+</figure>
+</div>
+  </details>
 </section>
 
-<!-- 8 -->
+<!-- 4. KEY INSIGHTS -->
+<section id="insights" class="later text">
+  <h2><span class="num">4</span><span lang="uz">Asosiy xulosalar</span><span lang="en">Key insights</span></h2>
+  <p><span lang="uz">Taxmin emas: har bir xulosa statistik test bilan tekshirilgan.</span><span lang="en">Not guesses: every point is backed by a statistical test.</span></p>
+  <ol class="notes">
+    
+    <li><b class="q"><span lang="uz">Qaysi xatti-harakat eskalatsiya bilan eng ko&#39;p bog&#39;liq?</span><span lang="en">Which behaviour is most linked to escalation?</span></b>
+      <span lang="uz">Mayda bank o&#39;tkazmalari ko&#39;p va yiriklari kam bo&#39;lishi. Ma&#39;lumotdagi eng aniq signal shu.</span><span lang="en">Many small and few large bank transfers. This is the clearest signal in the data.</span><span class="why">median bank-transfer mean 0.06 vs 0.21, Cliff&#39;s δ = -0.131, Mann-Whitney p = 7e-24.</span></li>
+    
+    <li><b class="q"><span lang="uz">Eskalatsiya qilinganlar faolroqmi?</span><span lang="en">Are escalated customers more active?</span></b>
+      <span lang="uz">Ha, lekin biroz: ~6% ko&#39;proq tranzaksiya, va bu butun 180 kun davomida saqlanadi.</span><span lang="en">Yes, slightly: ~6% more transactions, and it holds over the whole 180 days.</span><span class="why">volume ratio 1.062; median 453 vs 417 transactions; Cliff&#39;s δ = 0.062.</span></li>
+    
+    <li><b class="q"><span lang="uz">Signal oldidan faollik o&#39;zgaradimi?</span><span lang="en">Does activity change right before the alert?</span></b>
+      <span lang="uz">Yo&#39;q. Oxirgi 1–90 kunlik oynalarda ikkala sinf bir xil; birinchi gipotezamiz tasdiqlanmadi.</span><span lang="en">No. In 1 to 90-day windows both classes look the same; our first hypothesis did not hold.</span><span class="why">largest |Cliff&#39;s δ| over 1 to 90-day windows = 0.021.</span></li>
+    
+    <li><b class="q"><span lang="uz">Tur, yo&#39;nalish yoki vaqt muhimmi?</span><span lang="en">Do type, direction or time of day matter?</span></b>
+      <span lang="uz">Alohida olganda deyarli yo&#39;q. Tungi va dam olish kuni operatsiyalari ham farq qilmaydi.</span><span lang="en">On their own, hardly. Night-time and weekend activity make no difference either.</span><span class="why">type mix Cramér&#39;s V = 0.0035; time-pattern features ΔAUC -0.0003 in ablation.</span></li>
+    
+    <li><b class="q"><span lang="uz">Bitta belgi yetadimi?</span><span lang="en">Is one feature enough?</span></b>
+      <span lang="uz">Yo&#39;q. Eng yaxshi bitta belgi AUC 0.574; yuzlab kuchsiz belgilarni birlashtirgan model 0.650 beradi.</span><span lang="en">No. The best single feature reaches AUC 0.574; a model combining hundreds of weak features gets 0.650.</span><span class="why">26 features above 0.55 on their own.</span></li>
+    
+  </ol>
+</section>
+
+<!-- 5. FEATURE ENGINEERING -->
 <section id="features" class="later">
   <div class="text">
-    <h2><span lang="uz">Grafiklardan belgilarga</span><span lang="en">From the charts to features</span></h2>
-    <p><span lang="uz">Har bir belgi guruhini o'chirib ko'rib, CV qancha tushishini o'lchadik. Musbat son = guruh foydali.</span><span lang="en">We switched off one feature group at a time and measured how much the CV score dropped. Positive = the group helps.</span></p>
+    <h2><span class="num">5</span><span lang="uz">Belgilar yaratish</span><span lang="en">Feature engineering</span></h2>
+    <p><span lang="uz">Tranzaksiyalarni qanday qilib bashorat qiluvchi belgilarga aylantirdik? Asosiy g'oya: bitta signalga tegishli yuzlab tranzaksiyalar bitta qatorga umumlashtiriladi.</span><span lang="en">How did we turn transactions into predictive features? The key idea: the hundreds of transactions behind one alert are summarised into a single row.</span></p>
+  </div>
+  <ol class="flowline" aria-label="Pipeline">
+    <li><b><span lang="uz">Tarixiy tranzaksiyalar</span><span lang="en">Historical transactions</span></b><small><span lang="uz">faqat signal sanasidan oldingi</span><span lang="en">only before the alert date</span></small></li>
+    <li><b><span lang="uz">Signal bo'yicha agregatsiya</span><span lang="en">Aggregation per alert</span></b><small><span lang="uz">~461 qator → 1 qator</span><span lang="en">~461 rows → 1 row</span></small></li>
+    <li><b><span lang="uz">Xulq-atvor belgilari</span><span lang="en">Behavioural features</span></b><small><span lang="uz">626 ta</span><span lang="en">626 features</span></small></li>
+    <li><b><span lang="uz">ML model</span><span lang="en">ML model</span></b><small>LightGBM</small></li>
+    <li><b><span lang="uz">Eskalatsiya ehtimoli</span><span lang="en">Escalation probability</span></b><small>0 … 1</small></li>
+  </ol>
+  <div class="text">
+    <p><span lang="uz">Har bir belgi guruhini o'chirib, CV qancha tushishini o'lchadik (musbat = guruh foydali). Foyda bermagan guruhlar olib tashlandi.</span><span lang="en">We switched off one feature group at a time and measured the CV drop (positive = the group helps). Groups that did not help were dropped.</span></p>
   </div>
   <div class="wide">
     <table>
@@ -282,56 +325,97 @@
 </figure>
 </section>
 
-<!-- 9 -->
+<!-- 6. MACHINE LEARNING MODEL -->
 <section id="model" class="later">
   <div class="text">
-    <h2><span lang="uz">Model va validatsiya</span><span lang="en">Model and validation</span></h2>
-    <p><span lang="uz">Test sanalari train bilan bir xil oraliqda, adversarial AUC 0.5 atrofida. Shuning uchun vaqt bo'yicha bo'lish shart emas edi va biz takroriy stratifikatsiyalangan 5-fold ishlatdik (3 marta, seed 42). Imputatsiya, masshtablash va erta to'xtatish faqat o'quv fold ichida. Giperparametrlarni Optuna bilan topib, keyin qotirib qo'ydik.</span>
-    <span lang="en">Test dates cover the same range as train and adversarial AUC is around 0.5, so a time-based split was not needed. We used repeated stratified 5-fold CV (3 repeats, seed 42). Imputation, scaling and early stopping only ever see the training fold. Hyper-parameters were tuned with Optuna and then frozen.</span></p>
+    <h2><span class="num">6</span><span lang="uz">Machine learning model</span><span lang="en">Machine learning model</span></h2>
+    <ul class="models">
+      <li><b>Logistic regression</b> — <span lang="uz">baseline (oddiy chiziqli model)</span><span lang="en">baseline (a simple linear model)</span></li>
+      <li><b>CatBoost</b>, <b>XGBoost</b> — <span lang="uz">gradient boosting nomzodlari</span><span lang="en">gradient-boosting candidates</span></li>
+      <li><b>LightGBM</b> — <span lang="uz">gradient boosting nomzodi</span><span lang="en">gradient-boosting candidate</span></li>
+      <li><b>ROC-AUC</b> — <span lang="uz">baholash ko'rsatkichi</span><span lang="en">evaluation metric</span></li>
+    </ul>
+    <h3><span lang="uz">Validatsiya qanday qurilgan</span><span lang="en">How validation is set up</span></h3>
+    <ul>
+      <li><span lang="uz">Bo'lish <b>signal darajasida</b>: takroriy stratifikatsiyalangan 5-fold (3 marta, seed 42). Tranzaksiyalar alohida bo'linmaydi; har bir signalning belgilari faqat o'z tranzaksiyalaridan hisoblanadi.</span><span lang="en">The split is <b>at alert level</b>: repeated stratified 5-fold (3 repeats, seed 42). Transactions are never split on their own; each alert's features come only from its own transactions.</span></li>
+      <li><span lang="uz">Imputatsiya, masshtablash va erta to'xtatish faqat o'quv fold ichida. Giperparametrlar Optuna bilan topilib, qotirilgan.</span><span lang="en">Imputation, scaling and early stopping only ever see the training fold. Hyper-parameters were tuned with Optuna and then frozen.</span></li>
+      <li><span lang="uz">Test sanalari train bilan bir xil oraliqda va adversarial AUC ≈ 0.5, shuning uchun tasodifiy (vaqt bo'yicha emas) bo'lish o'rinli.</span><span lang="en">Test dates cover the same range as train and adversarial AUC ≈ 0.5, so a random (not time-based) split is appropriate.</span></li>
+    </ul>
+    <h3><span lang="uz">Qaysi model tanlandi va nima uchun</span><span lang="en">Which model was chosen, and why</span></h3>
+    <p><span lang="uz">Modellarni aralashtirib ko&#39;rdik (OOF 0.6501). Lekin og&#39;irliklarni 4 foldda topib, 5-foldda tekshirsak, blend 0.6499, eng yaxshi bitta model esa 0.6500. Farq yo&#39;q darajada, shuning uchun sodda variantni tanladik: LightGBM, butun train&#39;da 5 xil seed bilan o&#39;qitilgan.</span><span lang="en">We tried blending the models (OOF 0.6501). But when the weights are fitted on 4 folds and checked on the 5th, the blend gets 0.6499 and the best single model 0.6500. That is no real difference, so we went with the simpler option: LightGBM, trained on all of train with 5 different seeds.</span></p>
+    <p class="callout"><span lang="uz"><b>Sayt, CSV va notebook bir-biriga mos.</b> Bu yerda ko'rsatilgan model (LightGBM) yakuniy <code>team_SSUZ7K.csv</code> faylini yaratgan model bilan bir xil (SHA256 <code>96e74eefe3d9…</code>). Notebook xuddi shu faylni qayta yaratadi, va bu avtomatik tekshiriladi (farq ≤ 1e-6).</span><span lang="en"><b>Website, CSV and notebook agree.</b> The model shown here (LightGBM) is the one that produced the final <code>team_SSUZ7K.csv</code> (SHA256 <code>96e74eefe3d9…</code>). The notebook regenerates the same file, and this is checked automatically (difference ≤ 1e-6).</span></p>
   </div>
+</section>
+
+<!-- 7. MODEL PERFORMANCE -->
+<section id="performance" class="later">
+  <div class="text">
+    <h2><span class="num">7</span><span lang="uz">Model natijalari</span><span lang="en">Model performance</span></h2>
+  </div>
+  <dl class="kpis small">
+    <div class="kpi accent"><dt><span lang="uz">Validatsiya ROC-AUC (OOF)</span><span lang="en">Validation ROC-AUC (OOF)</span></dt><dd>0.650</dd></div>
+    <div class="kpi"><dt><span lang="uz">Foldlar bo'yicha</span><span lang="en">Per fold</span></dt><dd>0.648 ± 0.013</dd></div>
+    <div class="kpi"><dt><span lang="uz">Tasodifiy taxmin</span><span lang="en">Random guess</span></dt><dd>0.500</dd></div>
+  </dl>
   <div class="wide">
     <table>
-      <thead><tr><th>Model</th><th><span lang="uz">Fold AUC</span><span lang="en">Fold AUC</span></th><th>OOF AUC</th></tr></thead>
+      <thead><tr><th>Model</th><th><span lang="uz">Fold AUC (o'rtacha ± std)</span><span lang="en">Fold AUC (mean ± std)</span></th><th>OOF AUC</th></tr></thead>
       <tbody>
       <tr><td>LightGBM</td><td class="n">0.6479 ± 0.0125</td><td class="n">0.6500</td></tr><tr><td>XGBoost</td><td class="n">0.6477 ± 0.0123</td><td class="n">0.6495</td></tr><tr><td>CatBoost</td><td class="n">0.6409 ± 0.0114</td><td class="n">0.6460</td></tr><tr><td>Logistic regression</td><td class="n">0.6128 ± 0.0126</td><td class="n">0.6169</td></tr><tr><td>Blend (cat 0.29, lgb 0.29, lr 0.14, xgb 0.29)</td><td class="n"></td><td class="n">0.6501</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="text"><span lang="uz">Modellarni aralashtirib ko&#39;rdik (OOF 0.6501). Lekin og&#39;irliklarni 4 foldda topib, 5-foldda tekshirsak, blend 0.6499, eng yaxshi bitta model esa 0.6500. Farq yo&#39;q darajada, shuning uchun sodda variantni tanladik: LightGBM, butun train&#39;da 5 xil seed bilan o&#39;qitilgan.</span><span lang="en">We tried blending the models (OOF 0.6501). But when the weights are fitted on 4 folds and checked on the 5th, the blend gets 0.6499 and the best single model 0.6500. That is no real difference, so we went with the simpler option: LightGBM, trained on all of train with 5 different seeds.</span></p>
+  <div class="chart">
+  <h3><span lang="uz">Modellar taqqoslanishi</span><span lang="en">Model comparison</span></h3>
+  
+  <figure class="fig" id="f15_models">
+  <div class="plot" data-fig="f15_models" role="img" aria-label="Horizontal bar chart of cross-validated ROC-AUC with error bars for four models.">
+    <img class="fallback" src="img/f15_models.png" alt="Horizontal bar chart of cross-validated ROC-AUC with error bars for four models." loading="lazy" width="1500" height="540">
+  </div>
+  <figcaption><b><span lang="uz">14-rasm.</span><span lang="en">Fig. 14.</span></b>
+    <span lang="uz">Bir xil CV bo&#39;linishlarida to&#39;rt model. LightGBM va XGBoost deyarli teng; logistik regressiya (baseline) ancha orqada, ya&#39;ni signal chiziqli emas.</span><span lang="en">Four models on the same CV splits. LightGBM and XGBoost are practically tied; logistic regression (the baseline) is well behind, so the signal is not linear.</span></figcaption>
+</figure>
+</div><div class="chart">
+  <h3><span lang="uz">Eng muhim 20 belgi (LightGBM gain)</span><span lang="en">Top 20 features (LightGBM gain)</span></h3>
+  
   <figure class="fig" id="f14_importance">
   <div class="plot" data-fig="f14_importance" role="img" aria-label="Horizontal bar chart of LightGBM gain for the 20 most important features.">
     <img class="fallback" src="img/f14_importance.png" alt="Horizontal bar chart of LightGBM gain for the 20 most important features." loading="lazy" width="1500" height="840">
   </div>
-  <figcaption><b><span lang="uz">14-rasm.</span><span lang="en">Fig. 14.</span></b>
+  <figcaption><b><span lang="uz">15-rasm.</span><span lang="en">Fig. 15.</span></b>
     <span lang="uz">Yakuniy LightGBM&#39;da eng ko&#39;p ishlatilgan belgilar. Ko&#39;pchiligi tur bo&#39;yicha miqdor statistikasi: karta minimumi, naqd kirim o&#39;rtachasi, bank o&#39;tkazmalari o&#39;rtachasi va tarqoqligi.</span><span lang="en">Features the final LightGBM leans on most. Mostly per-type amount statistics: card minimum, cash-in mean, bank-transfer mean and spread.</span></figcaption>
 </figure>
-  <div class="text">
-    <h3><span lang="uz">Ishlamagan narsalar</span><span lang="en">Things that did not work</span></h3>
-    <p><span lang="uz">Boshqa musobaqalar (AMEX, IEEE-CIS, Santander) va AML maqolalaridan g'oyalar oldik. Ko'pchiligi bu ma'lumotda yordam bermadi:</span><span lang="en">We borrowed ideas from other competitions (AMEX, IEEE-CIS, Santander) and AML papers. Most of them did not help on this data:</span></p>
-  </div>
-  <div class="wide">
+</div>
+</section>
+
+<!-- 8. CONCLUSION -->
+<section id="end" class="later text">
+  <h2><span class="num">8</span><span lang="uz">Xulosa</span><span lang="en">Conclusion</span></h2>
+  <h3><span lang="uz">1. Qanday xatti-harakatlar eskalatsiya bilan bog'liq?</span><span lang="en">1. Which financial behaviours are linked to escalation?</span></h3>
+  <p><span lang="uz">Eskalatsiya qilingan mijozlarda mayda bank o'tkazmalari ko'proq, yiriklari kamroq, va ular umuman biroz faolroq (~6%). Kirim/chiqim nisbati, tranzaksiya turlari, tungi va dam olish kuni operatsiyalari, signal oldidan faollik sakrashi esa farq qilmaydi.</span><span lang="en">Escalated customers make more small and fewer large bank transfers, and are somewhat more active overall (~6%). The in/out balance, the type mix, night and weekend activity and any pre-alert spike make no difference.</span></p>
+  <h3><span lang="uz">2. Model ularni qanday tahlil qiladi?</span><span lang="en">2. How does our model use them?</span></h3>
+  <p><span lang="uz">Har bir signal tarixi 626 ta belgiga umumlashtiriladi (asosan har bir tur va yo'nalish ichidagi miqdor statistikasi). LightGBM bu kuchsiz signallarni birlashtiradi: eng yaxshi bitta belgi ~0.57 AUC beradi, model esa 0.650.</span><span lang="en">Each alert's history is summarised into 626 features (mostly amount statistics within each type and direction). LightGBM combines these weak signals: the best single feature gets ~0.57 AUC, the model 0.650.</span></p>
+  <h3><span lang="uz">3. Qanday cheklovlar bor?</span><span lang="en">3. What are the limitations?</span></h3>
+  <ul>
+    <li><span lang="uz">Signal kuchsiz: 0.650 AUC foydali, lekin mukammal emas; model mutaxassis o'rnini emas, navbatni saralashni qo'llab-quvvatlaydi.</span><span lang="en">The signal is weak: 0.650 AUC is useful but far from perfect; the model supports prioritising the review queue rather than replacing the specialist.</span></li>
+    <li><span lang="uz">Kontragent va mijoz ID'si yo'q, shuning uchun graf belgilari yo'q. Miqdor standartlashtirilgan indeks.</span><span lang="en">No counterparties or customer IDs, so no graph features. Amounts are a standardised index.</span></li>
+    <li><span lang="uz">Signal oldidagi 3 daqiqalik "portlash" (8-rasm, qo'shimcha grafiklarda) generator artefakti bo'lsa kerak.</span><span lang="en">The 3-minute burst before each alert (Fig. 8, under "More charts") is most likely a data-generator artefact.</span></li>
+    <li><span lang="uz">Ma'lumotlar sintetik; haqiqiy bankda natija boshqacha bo'lishi mumkin.</span><span lang="en">The data are synthetic; results on real bank data may differ.</span></li>
+  </ul>
+  <details class="more">
+    <summary><span lang="uz">Ishlamagan g'oyalar (9)</span><span lang="en">Ideas that did not work (9)</span></summary>
     <table>
       <thead><tr><th><span lang="uz">G'oya</span><span lang="en">Idea</span></th><th>OOF AUC</th></tr></thead>
       <tbody><tr><td>GRU over the last 1024 transactions (idea from AMEX 1st place)</td><td class="n">0.5679</td></tr><tr><td>Transaction-level model, then averaged per alert</td><td class="n">0.555</td></tr><tr><td>Naive Bayes on binned features (Santander trick)</td><td class="n">0.5600</td></tr><tr><td>LightGBM with 2 leaves (Santander)</td><td class="n">0.6374</td></tr><tr><td>LightGBM DART (AMEX)</td><td class="n">0.6071</td></tr><tr><td>Direction/type transitions, velocity, deltas</td><td class="n">0.6420</td></tr><tr><td>Recent vs earlier behaviour shift</td><td class="n">0.6396</td></tr><tr><td>Removing the weekly trend from amounts</td><td class="n">0.6353</td></tr><tr><td>Alert date as a feature</td><td class="n">0.6478</td></tr></tbody>
     </table>
-  </div>
-</section>
-
-<!-- 10 -->
-<section id="end" class="later text">
-  <h2><span lang="uz">Xulosa</span><span lang="en">Wrap-up</span></h2>
-  <p><span lang="uz">Eskalatsiya signali kuchsiz va juda ko'p belgilar orasida tarqalgan. Eng yaxshi bitta belgi ham AUC 0.58 ga yetmaydi, lekin yuzlab kuchsiz belgilarni birga ishlatgan gradient boosting 0.650 beradi. Eng aniq ko'ringan narsa: eskalatsiya qilingan mijozlarda mayda bank o'tkazmalari ko'proq, yiriklari kamroq, va ular umuman olganda biroz faolroq (~6%). Tungi operatsiyalar, dam olish kunlari, "kirdi-chiqdi" (pass-through) va strukturalash kabi klassik AML belgilarini tekshirdik, lekin ular bu ma'lumotda ishlamadi.</span>
-  <span lang="en">The escalation signal is weak and spread over a lot of features. No single feature reaches 0.58 AUC, but gradient boosting over hundreds of weak ones gets to 0.650. The clearest thing we can point at: escalated customers make more small bank transfers and fewer large ones, and are a bit more active overall (~6%). We checked the classic AML red flags too (night activity, weekends, pass-through, structuring), and none of them worked on this data.</span></p>
-  <p><span lang="uz"><b>Cheklovlar.</b> Kontragent va mijoz ID'si yo'q, shuning uchun graf belgilarini qura olmadik. Miqdor standartlashtirilgan indeks. Signal oldidagi 3 daqiqalik "portlash" generatorning artefakti bo'lsa kerak. GitHub'dagi boshqa jamoalarning ochiq natijalari ham 0.56 va 0.63 orasida, demak shift asosan ma'lumotning o'zida.</span>
-  <span lang="en"><b>Limitations.</b> There are no counterparties or customer IDs, so no graph features. Amounts are a standardised index. The 3-minute burst before each alert is most likely a generator artefact. Other teams' public results on GitHub sit between 0.56 and 0.63, which suggests the ceiling is mostly in the data itself.</span></p>
-  <p><span lang="uz"><b>Vaqt bo'lsa nima qilardik:</b> CoLES kabi o'z-o'zini o'rgatuvchi ketma-ketlik embeddinglari; kontragent ma'lumoti bo'lsa, graf belgilar.</span><span lang="en"><b>With more time we would try</b> self-supervised sequence embeddings (CoLES), and graph features if counterparty data existed.</span></p>
-  <h3><span lang="uz">Qanday qayta ishga tushirish</span><span lang="en">How to reproduce</span></h3>
+  </details>
+  <h3><span lang="uz">Qayta ishga tushirish</span><span lang="en">Reproducibility</span></h3>
 <pre class="flow">uv sync
-uv run python tasks.py all      # audit → eda → features → train → predict → notebook → site</pre>
-  <p><span lang="uz">Yoki bitta mustaqil notebook: <code>notebooks/team_SSUZ7K_reproducible.ipynb</code> (faqat 5 ta berilgan faylni o'qiydi).</span><span lang="en">Or one self-contained notebook: <code>notebooks/team_SSUZ7K_reproducible.ipynb</code> (it reads only the 5 provided files).</span>
+uv run python tasks.py all      # audit → features → eda → train → predict → notebook → site</pre>
+  <p><span lang="uz">Yoki bitta mustaqil notebook: <code>notebooks/team_SSUZ7K_reproducible.ipynb</code> (faqat 5 ta berilgan faylni o'qiydi, seed'lar qotirilgan).</span><span lang="en">Or one self-contained notebook: <code>notebooks/team_SSUZ7K_reproducible.ipynb</code> (reads only the 5 provided files, fixed seeds).</span>
   </p>
 </section>
 </main>
-<footer>SignalScope UZ · SSUZ7K · 2026-09-24</footer>
+<footer>VisionX · Financial Alert Intelligence · 2026-09-25</footer>
 </body>
 </html>
