@@ -365,7 +365,7 @@
     </ul>
     <h3><span lang="uz">Qaysi model tanlandi va nima uchun</span><span lang="en">Which model was chosen, and why</span></h3>
     <p><span lang="uz">Modellarni aralashtirib ko&#39;rdik (OOF 0.6501). Lekin og&#39;irliklarni 4 foldda topib, 5-foldda tekshirsak, blend 0.6499, eng yaxshi bitta model esa 0.6500. Farq yo&#39;q darajada, shuning uchun sodda variantni tanladik: LightGBM, butun train&#39;da 5 xil seed bilan o&#39;qitilgan.</span><span lang="en">We tried blending the models (OOF 0.6501). But when the weights are fitted on 4 folds and checked on the 5th, the blend gets 0.6499 and the best single model 0.6500. That is no real difference, so we went with the simpler option: LightGBM, trained on all of train with 5 different seeds.</span></p>
-    <p class="callout"><span lang="uz"><b>Sayt, CSV va notebook bir-biriga mos.</b> Bu yerda ko'rsatilgan model (LightGBM) yakuniy <code>team_SSUZ7K.csv</code> faylini yaratgan model bilan bir xil (SHA256 <code>96e74eefe3d9…</code>). Notebook xuddi shu faylni qayta yaratadi, va bu avtomatik tekshiriladi (farq ≤ 1e-6).</span><span lang="en"><b>Website, CSV and notebook agree.</b> The model shown here (LightGBM) is the one that produced the final <code>team_SSUZ7K.csv</code> (SHA256 <code>96e74eefe3d9…</code>). The notebook regenerates the same file, and this is checked automatically (difference ≤ 1e-6).</span></p>
+    <p class="callout"><span lang="uz"><b>Sayt, CSV va notebook bir-biriga mos.</b> Bu yerda ko'rsatilgan model (LightGBM) yakuniy <code>team_040817EA.csv</code> faylini yaratgan model bilan bir xil (SHA256 <code>96e74eefe3d9…</code>). Notebook xuddi shu faylni qayta yaratadi, va bu avtomatik tekshiriladi (farq ≤ 1e-6).</span><span lang="en"><b>Website, CSV and notebook agree.</b> The model shown here (LightGBM) is the one that produced the final <code>team_040817EA.csv</code> (SHA256 <code>96e74eefe3d9…</code>). The notebook regenerates the same file, and this is checked automatically (difference ≤ 1e-6).</span></p>
   </div>
 </section>
 
@@ -435,7 +435,7 @@
   <h3><span lang="uz">Qayta ishga tushirish</span><span lang="en">Reproducibility</span></h3>
 <pre class="flow">uv sync
 uv run python tasks.py all      # audit → features → eda → train → predict → notebook → site</pre>
-  <p><span lang="uz">Yoki bitta mustaqil notebook: <code>notebooks/team_SSUZ7K_reproducible.ipynb</code> (faqat 5 ta berilgan faylni o'qiydi, seed'lar qotirilgan).</span><span lang="en">Or one self-contained notebook: <code>notebooks/team_SSUZ7K_reproducible.ipynb</code> (reads only the 5 provided files, fixed seeds).</span>
+  <p><span lang="uz">Yoki bitta mustaqil notebook: <code>notebooks/team_040817EA_reproducible.ipynb</code> (faqat 5 ta berilgan faylni o'qiydi, seed'lar qotirilgan).</span><span lang="en">Or one self-contained notebook: <code>notebooks/team_040817EA_reproducible.ipynb</code> (reads only the 5 provided files, fixed seeds).</span>
   </p>
 </section>
 </main>

@@ -81,7 +81,7 @@ ROC-AUC is computed by the organizers only and is not known to us; the website l
 | 3-minute burst (`b_*`, `br_*`) | 51 | 40 | 9% |
 | Last 20 transactions (`last*`) | 86 | 58 | 7% |
 
-**Submission and notebook check (static, 2026-09-25):** `outputs/team_SSUZ7K.csv` has the right header, 6,000 unique
+**Submission and notebook check (static, 2026-09-25):** `outputs/team_040817EA.csv` has the right header, 6,000 unique
 `SG_######` ids, values in [0, 1] with 8 decimals, LF line endings, no BOM or quotes; SHA256 `96e74eef…` matches
 `run_manifest.json`. The executed notebook has cells run in order 1–18 with no errors, reports the same CV table,
 writes a CSV with the same SHA256 and ends with `VALIDATION PASS`.

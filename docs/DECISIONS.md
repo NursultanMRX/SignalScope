@@ -10,8 +10,9 @@ Each entry: decision, evidence, alternatives considered. Numbers come from `arti
   `requirements.txt` for the final package is exported from the lock.
 - **`tasks.py` task runner + thin Makefile**: Windows has no `make`; `make <stage>` and
   `uv run python tasks.py <stage>` are equivalent.
-- **TEAM_ID placeholder `SSUZ7K`** in `configs/config.yaml`. Replace it, then run
-  `uv run python tasks.py predict notebook site package`.
+- **TEAM_ID `040817EA`** (official) in `configs/config.yaml`; it replaced the placeholder `SSUZ7K`. The id only names the
+  files (the predictions do not depend on it), so the CSV and notebook were renamed, not re-generated; the CSV bytes
+  and SHA256 are unchanged.
 - **kaleido 1.1.0** for PNG export: kaleido 0.2.1 hangs on Windows and 0.1.x is incompatible with plotly 6.
 - **Skills.** Used: ml-experiment-scaffold, data:validate-data, dataviz, modern-web-guidance, find-skills,
   autoresearch (installed from `github/awesome-copilot`, its keep/revert loop is implemented by

@@ -5,7 +5,7 @@ from the customer's transaction history (synthetic data). Metric: ROC-AUC.
 
 | Deliverable | Where |
 |---|---|
-| Submission | `outputs/team_<TEAM_ID>.csv` (currently `team_SSUZ7K.csv`) |
+| Submission | `outputs/team_<TEAM_ID>.csv` (`team_040817EA.csv`) |
 | Public EDA website | https://bankmonitoring.vercel.app (also in `SITE_URL.txt`) |
 | Reproducible notebook | `notebooks/team_<TEAM_ID>_reproducible.ipynb` |
 | Packaged deliverables | `final_submission/` (`uv run python tasks.py package`) |
@@ -78,4 +78,3 @@ tests/          leakage, parity, determinism, validator, notebook tests
   much higher (see `docs/DECISIONS.md`, "Target of 0.8–0.9 AUC").
 - No counterparties or customer ids, so no graph features. `miqdor_indeksi` is a standardised index, not money.
 - The 3-minute pre-alert burst looks like a generator artefact; it is used because it is pre-alert by timestamp.
-- `TEAM_ID` is still the placeholder `SSUZ7K`.

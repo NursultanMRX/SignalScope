@@ -1,6 +1,6 @@
 # SignalScope UZ — single source of truth for paths, seeds, CV, and model params.
 team_name: VisionX         # shown on the website
-team_id: SSUZ7K            # PLACEHOLDER — replace with the official team id, then `python tasks.py predict notebook package`
+team_id: 040817EA          # official team id (submission file team_040817EA.csv)
 
 seed: 42
 n_jobs: 16                 # fixed thread count => deterministic GBDT results
