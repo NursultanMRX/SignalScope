@@ -76,15 +76,27 @@
   <h1>{{ team_name }} <span class="dash">—</span> Financial Alert Intelligence</h1>
   <p class="sub"><span lang="uz">Moliyaviy signallar eskalatsiyasini machine learning yordamida bashorat qilish.</span><span lang="en">Predicting financial alert escalation through machine learning.</span></p>
   <p class="text"><span lang="uz">Monitoring bo'limiga mijozlarning tranzaksiya tarixidan avtomatik signallar keladi. Mutaxassis har birini yo rad etadi, yo eskalatsiya qiladi. Maqsadimiz: yashirin test to'plamidagi har bir signal uchun eskalatsiya ehtimolini berish (baholash: ROC-AUC).</span><span lang="en">Automatic alerts are raised from customers' transaction histories, and a specialist either dismisses or escalates each one. Our goal: give every alert in the hidden test set a probability of escalation (scored by ROC-AUC).</span></p>
+  <div class="result" role="group" aria-label="Final result">
+    <div class="r-main">
+      <span class="r-label"><span lang="uz">Yakuniy model</span><span lang="en">Final model</span></span>
+      <span class="r-model">{{ chosen_short }}</span>
+      <span class="r-sub"><span lang="uz">butun train'da 5 seed bilan o'qitilgan</span><span lang="en">refit on all training data with 5 seeds</span></span>
+    </div>
+    <div class="r-main">
+      <span class="r-label"><span lang="uz">Validatsiya ROC-AUC</span><span lang="en">Validation ROC-AUC</span></span>
+      <span class="r-auc">{{ m.headline }}</span>
+      <span class="r-sub"><span lang="uz">OOF, 5 fold × 3 takror, {{ n.train_signals_fmt }} train signal</span><span lang="en">out-of-fold, 5 folds × 3 repeats, {{ n.train_signals_fmt }} training alerts</span></span>
+    </div>
+  </div>
   <dl class="kpis">
     <div class="kpi"><dt><span lang="uz">Train signallar</span><span lang="en">Training signals</span></dt><dd>{{ n.train_signals_fmt }}</dd></div>
     <div class="kpi"><dt><span lang="uz">Test signallar</span><span lang="en">Test signals</span></dt><dd>{{ n.test_signals_fmt }}</dd></div>
     <div class="kpi"><dt><span lang="uz">Tranzaksiyalar</span><span lang="en">Transactions</span></dt><dd>{{ n.all_tx_fmt }}</dd></div>
     <div class="kpi"><dt><span lang="uz">Eskalatsiya ulushi</span><span lang="en">Escalation rate</span></dt><dd>{{ n.rate_pct }}</dd></div>
-    <div class="kpi"><dt><span lang="uz">Yakuniy model</span><span lang="en">Final model</span></dt><dd>{{ chosen_short }}</dd></div>
-    <div class="kpi accent"><dt><span lang="uz">Validatsiya ROC-AUC</span><span lang="en">Validation ROC-AUC</span></dt><dd>{{ m.headline }}</dd></div>
+    <div class="kpi"><dt><span lang="uz">Belgilar: yaratilgan / modelda</span><span lang="en">Features: built / used by model</span></dt><dd>{{ fsum.built }} / {{ fsum.used }}</dd></div>
+    <div class="kpi"><dt><span lang="uz">Yashirin test ROC-AUC</span><span lang="en">Hidden test ROC-AUC</span></dt><dd class="muted"><span lang="uz">tashkilotchilar baholaydi</span><span lang="en">scored by organizers</span></dd></div>
   </dl>
-  <p class="byline"><span lang="uz">Barcha raqamlar bizning koddan olingan (5 fold × 3 takror CV). Ma'lumotlar sintetik, haqiqiy mijozlar yo'q; saytda xom tranzaksiya yoki signal ID'lari e'lon qilinmagan. Yangilangan: {{ build_date }}.</span><span lang="en">Every number comes from our code (5-fold × 3-repeat CV). The data are synthetic, with no real customers; no raw transactions or signal IDs are published here. Updated {{ build_date }}.</span></p>
+  <p class="byline"><span lang="uz">Barcha raqamlar bizning koddan olingan. {{ m.headline }} — train ma'lumotidagi validatsiya natijasi; yashirin test natijasi bizga ma'lum emas. Ma'lumotlar sintetik, haqiqiy mijozlar yo'q; saytda xom tranzaksiya yoki signal ID'lari e'lon qilinmagan. Yangilangan: {{ build_date }}.</span><span lang="en">Every number comes from our code. {{ m.headline }} is a validation score on the training data; the hidden test score is not known to us. The data are synthetic, with no real customers; no raw transactions or signal IDs are published here. Updated {{ build_date }}.</span></p>
 </section>
 
 <!-- 2. DATASET OVERVIEW -->
@@ -179,6 +191,19 @@
     <li><b><span lang="uz">Eskalatsiya ehtimoli</span><span lang="en">Escalation probability</span></b><small>0 … 1</small></li>
   </ol>
   <div class="text">
+    <h3><span lang="uz">Yakuniy modelga qaysi belgilar kirdi?</span><span lang="en">Which features does the final model use?</span></h3>
+    <p><span lang="uz">{{ fsum.built }} ta belgi yaratildi, hammasi modelga beriladi; yakuniy {{ chosen_short }} ulardan {{ fsum.used }} tasini haqiqatda ishlatadi (gain &gt; 0), qolgan {{ fsum.built - fsum.used }} tasi hech bir bo'linishda tanlanmagan. Eng muhim 20 belgi umumiy gain'ning {{ fsum.top20 }}, eng muhim 100 tasi {{ fsum.top100 }} qismini beradi ({{ figs.f14_importance.num }}-rasm). Vaqt naqshlari va pass-through guruhlari CV'ni yaxshilamagani uchun umuman yaratilmaydi.</span><span lang="en">We build {{ fsum.built }} features and pass all of them to the model; the final {{ chosen_short }} actually uses {{ fsum.used }} (gain &gt; 0), while the other {{ fsum.built - fsum.used }} are never picked for a split. The top 20 features carry {{ fsum.top20 }} of the total gain and the top 100 carry {{ fsum.top100 }} (Fig. {{ figs.f14_importance.num }}). Time-pattern and pass-through groups did not improve CV, so they are not built at all.</span></p>
+  </div>
+  <div class="wide">
+    <table>
+      <thead><tr><th><span lang="uz">Belgi guruhi</span><span lang="en">Feature group</span></th><th><span lang="uz">Yaratilgan</span><span lang="en">Built</span></th><th><span lang="uz">Modelda ishlatilgan</span><span lang="en">Used by model</span></th><th><span lang="uz">Gain ulushi</span><span lang="en">Share of gain</span></th></tr></thead>
+      <tbody>
+      {% for r in fam_rows %}<tr><td><span lang="uz">{{ r.uz }}</span><span lang="en">{{ r.en }}</span></td><td class="n">{{ r.built }}</td><td class="n">{{ r.used }}</td><td class="n">{{ r.share }}</td></tr>{% endfor %}
+      <tr class="total"><td><b><span lang="uz">Jami</span><span lang="en">Total</span></b></td><td class="n"><b>{{ fsum.built }}</b></td><td class="n"><b>{{ fsum.used }}</b></td><td class="n"><b>100%</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="text">
     <p><span lang="uz">Har bir belgi guruhini o'chirib, CV qancha tushishini o'lchadik (musbat = guruh foydali). Foyda bermagan guruhlar olib tashlandi.</span><span lang="en">We switched off one feature group at a time and measured the CV drop (positive = the group helps). Groups that did not help were dropped.</span></p>
   </div>
   <div class="wide">
@@ -201,7 +226,7 @@
     <ul class="models">
       <li><b>Logistic regression</b> — <span lang="uz">baseline (oddiy chiziqli model)</span><span lang="en">baseline (a simple linear model)</span></li>
       <li><b>CatBoost</b>, <b>XGBoost</b> — <span lang="uz">gradient boosting nomzodlari</span><span lang="en">gradient-boosting candidates</span></li>
-      <li><b>LightGBM</b> — <span lang="uz">gradient boosting nomzodi</span><span lang="en">gradient-boosting candidate</span></li>
+      <li><b>LightGBM</b> — <span lang="uz">gradient boosting nomzodi; validatsiyada eng yaxshisi, <b>yakuniy model</b></span><span lang="en">gradient-boosting candidate; best in validation, <b>the final model</b></span></li>
       <li><b>ROC-AUC</b> — <span lang="uz">baholash ko'rsatkichi</span><span lang="en">evaluation metric</span></li>
     </ul>
     <h3><span lang="uz">Validatsiya qanday qurilgan</span><span lang="en">How validation is set up</span></h3>
@@ -221,14 +246,15 @@
   <div class="text">
     {{ h2(7, "Model natijalari", "Model performance") }}
   </div>
+  <p class="callout"><span lang="uz"><b>Bu bo'limdagi barcha raqamlar — validatsiya natijalari.</b> Ular {{ n.train_signals_fmt }} ta belgilangan train signalida out-of-fold (OOF) usulida hisoblangan: har bir signalni u o'qitishda qatnashmagan model baholaydi. Yashirin test ({{ n.test_signals_fmt }} signal) javoblarini biz ko'rmaganmiz; uning ROC-AUC natijasini faqat tashkilotchilar hisoblaydi, va u validatsiyadan farq qilishi mumkin.</span><span lang="en"><b>Every number in this section is a validation result.</b> They are computed out-of-fold (OOF) on the {{ n.train_signals_fmt }} labelled training alerts: each alert is scored by a model that did not train on it. We never see the hidden test labels ({{ n.test_signals_fmt }} alerts); its ROC-AUC is computed only by the organizers and may differ from validation.</span></p>
   <dl class="kpis small">
     <div class="kpi accent"><dt><span lang="uz">Validatsiya ROC-AUC (OOF)</span><span lang="en">Validation ROC-AUC (OOF)</span></dt><dd>{{ m.headline }}</dd></div>
-    <div class="kpi"><dt><span lang="uz">Foldlar bo'yicha</span><span lang="en">Per fold</span></dt><dd>{{ m.fold_mean }} ± {{ m.fold_std }}</dd></div>
-    <div class="kpi"><dt><span lang="uz">Tasodifiy taxmin</span><span lang="en">Random guess</span></dt><dd>0.500</dd></div>
+    <div class="kpi"><dt><span lang="uz">Validatsiya, foldlar bo'yicha</span><span lang="en">Validation, per fold</span></dt><dd>{{ m.fold_mean }} ± {{ m.fold_std }}</dd></div>
+    <div class="kpi"><dt><span lang="uz">Yashirin test ROC-AUC</span><span lang="en">Hidden test ROC-AUC</span></dt><dd class="muted"><span lang="uz">tashkilotchilar baholaydi</span><span lang="en">scored by organizers</span></dd></div>
   </dl>
   <div class="wide">
     <table>
-      <thead><tr><th>Model</th><th><span lang="uz">Fold AUC (o'rtacha ± std)</span><span lang="en">Fold AUC (mean ± std)</span></th><th>OOF AUC</th></tr></thead>
+      <thead><tr><th>Model</th><th><span lang="uz">Validatsiya: fold AUC (o'rtacha ± std)</span><span lang="en">Validation: fold AUC (mean ± std)</span></th><th><span lang="uz">Validatsiya: OOF AUC</span><span lang="en">Validation: OOF AUC</span></th></tr></thead>
       <tbody>
       {% for r in results %}<tr><td>{{ r.name }}</td><td class="n">{{ r.fold }}</td><td class="n">{{ r.oof }}</td></tr>{% endfor %}
       </tbody>

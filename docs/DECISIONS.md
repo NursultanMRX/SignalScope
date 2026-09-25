@@ -85,3 +85,7 @@ signal that could reach 0.8, and we did not use any leak.
   committed. Without them the chart is omitted rather than filled with placeholder numbers.
 - The site rebuilds without raw data: feature count is cached in `artifacts/eda/site_meta.json`, and PNG fallbacks
   keep the committed file when kaleido has no Chrome.
+- Second pass for the CTO review: the final model and its validation ROC-AUC sit in a banner at the top of the page;
+  the feature-engineering section shows how many of the 626 features the final model actually uses, per group;
+  key insights cut to 4; the performance section states that every number is a validation (OOF) result and shows
+  the hidden-test ROC-AUC as "scored by organizers" instead of mixing it with validation.

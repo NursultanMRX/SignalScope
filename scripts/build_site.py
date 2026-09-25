@@ -97,7 +97,8 @@ def main() -> None:
     manifest = json.loads((art / "run_manifest.json").read_text(encoding="utf-8"))
 
     # feature importance figure (aggregated gains only)
-    imp = pd.read_csv(art / "feature_importance.csv").head(20)[::-1]
+    imp_all = pd.read_csv(art / "feature_importance.csv")
+    imp = imp_all.head(20)[::-1]
     fig = go.Figure(go.Bar(x=imp["gain"], y=imp["feature"], orientation="h", marker_color=LIGHT["dismissed"],
                            hovertemplate="%{y}: %{x:.0f}<extra></extra>"))
     style(fig, "", x="LightGBM gain (to'liq train / full-train refit)", height=560)
@@ -165,6 +166,35 @@ def main() -> None:
          "post_train": fmt(tr["post_signal_rows"]), "post_test": fmt(te["post_signal_rows"]),
          "id_auc": f"{audit['target']['signal_id_order_auc']:.3f}",
          "adv_auc": f"{audit['adversarial_validation']['auc']:.3f}", "n_features": feats}
+
+    # which of the built features the final model actually uses (gain > 0 in the full-train refit)
+    def family(name: str) -> str:
+        if re.search(r"_bin\d", name):
+            return "hist"
+        if re.match(r"(w\d+_|accel_)", name):
+            return "win"
+        if name.startswith("last"):
+            return "lastk"
+        if name.startswith(("b_", "br_")):
+            return "burst"
+        return "agg"
+    imp_all["fam"] = imp_all["feature"].map(family)
+    tot_gain = imp_all["gain"].sum()
+    fam_names = {"agg": ("Tur va yo'nalish bo'yicha agregatlar", "Aggregates by type and direction"),
+                 "hist": ("Miqdor gistogrammasi", "Amount histogram"),
+                 "lastk": ("Oxirgi 20 tranzaksiya", "Last 20 transactions"),
+                 "burst": ("3 daqiqalik portlash", "3-minute burst"),
+                 "win": ("1–90 kunlik oynalar", "1 to 90-day windows")}
+    fam_rows = []
+    for k, (uz, en) in fam_names.items():
+        g = imp_all[imp_all["fam"] == k]
+        fam_rows.append({"uz": uz, "en": en, "built": len(g), "used": int((g["gain"] > 0).sum()),
+                         "share": f"{g['gain'].sum() / tot_gain:.0%}"})
+    fam_rows.sort(key=lambda r: -float(r["share"].rstrip("%")))
+    srt = imp_all["gain"].sort_values(ascending=False)
+    fsum = {"built": len(imp_all), "used": int((imp_all["gain"] > 0).sum()),
+            "top20": f"{srt.head(20).sum() / tot_gain:.0%}", "top100": f"{srt.head(100).sum() / tot_gain:.0%}"}
+    assert fsum["built"] == feats, "feature_importance.csv does not match the feature matrix"
 
     bk = st["amount_by_type"]["bank_otkazmasi"]
     ev = st["event_time"]
@@ -303,12 +333,6 @@ def main() -> None:
          "en": "On their own, hardly. Night-time and weekend activity make no difference either.",
          "ev": f"type mix Cramér's V = {kw['v']}; time-pattern features ΔAUC "
                f"{abl['Vaqt naqshlari / time patterns']:+.4f} in ablation."},
-        {"q_uz": "Bitta belgi yetadimi?", "q_en": "Is one feature enough?",
-         "uz": f"Yo'q. Eng yaxshi bitta belgi AUC {max(top1[1], 1 - top1[1]):.3f}; yuzlab kuchsiz belgilarni birlashtirgan "
-               f"model {m['headline']} beradi.",
-         "en": f"No. The best single feature reaches AUC {max(top1[1], 1 - top1[1]):.3f}; a model combining hundreds of "
-               f"weak features gets {m['headline']}.",
-         "ev": f"{st['univariate_n_over_055']} features above 0.55 on their own."},
     ]
 
     feature_table = [
@@ -364,7 +388,7 @@ def main() -> None:
     env = Environment(loader=FileSystemLoader(SRC), autoescape=True)
     html = env.get_template("template.html").render(
         n=n, m=m, figs=byid, eda_main=[byid[k] for k in eda_main], eda_more=[byid[k] for k in eda_more],
-        perf=[byid[k] for k in perf], insights=insights, feature_table=feature_table, results=results, ens=ens,
+        perf=[byid[k] for k in perf], insights=insights, fam_rows=fam_rows, fsum=fsum, feature_table=feature_table, results=results, ens=ens,
         negatives=negatives, chosen=chosen, chosen_short=names[max(w, key=w.get)] if len(w) == 1 else "Blend",
         dark_map={k.lower(): v for k, v in DARK_MAP.items()}, plotly_version=ver,
         plotly_sri=sri(url, art / "cache" / f"plotly_{ver}.sri"), team_name=cfg.get("team_name", cfg["team_id"]),

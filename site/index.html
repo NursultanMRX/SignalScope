@@ -57,15 +57,27 @@
   <h1>VisionX <span class="dash">—</span> Financial Alert Intelligence</h1>
   <p class="sub"><span lang="uz">Moliyaviy signallar eskalatsiyasini machine learning yordamida bashorat qilish.</span><span lang="en">Predicting financial alert escalation through machine learning.</span></p>
   <p class="text"><span lang="uz">Monitoring bo'limiga mijozlarning tranzaksiya tarixidan avtomatik signallar keladi. Mutaxassis har birini yo rad etadi, yo eskalatsiya qiladi. Maqsadimiz: yashirin test to'plamidagi har bir signal uchun eskalatsiya ehtimolini berish (baholash: ROC-AUC).</span><span lang="en">Automatic alerts are raised from customers' transaction histories, and a specialist either dismisses or escalates each one. Our goal: give every alert in the hidden test set a probability of escalation (scored by ROC-AUC).</span></p>
+  <div class="result" role="group" aria-label="Final result">
+    <div class="r-main">
+      <span class="r-label"><span lang="uz">Yakuniy model</span><span lang="en">Final model</span></span>
+      <span class="r-model">LightGBM</span>
+      <span class="r-sub"><span lang="uz">butun train'da 5 seed bilan o'qitilgan</span><span lang="en">refit on all training data with 5 seeds</span></span>
+    </div>
+    <div class="r-main">
+      <span class="r-label"><span lang="uz">Validatsiya ROC-AUC</span><span lang="en">Validation ROC-AUC</span></span>
+      <span class="r-auc">0.650</span>
+      <span class="r-sub"><span lang="uz">OOF, 5 fold × 3 takror, 14 000 train signal</span><span lang="en">out-of-fold, 5 folds × 3 repeats, 14 000 training alerts</span></span>
+    </div>
+  </div>
   <dl class="kpis">
     <div class="kpi"><dt><span lang="uz">Train signallar</span><span lang="en">Training signals</span></dt><dd>14 000</dd></div>
     <div class="kpi"><dt><span lang="uz">Test signallar</span><span lang="en">Test signals</span></dt><dd>6 000</dd></div>
     <div class="kpi"><dt><span lang="uz">Tranzaksiyalar</span><span lang="en">Transactions</span></dt><dd>10 015 238</dd></div>
     <div class="kpi"><dt><span lang="uz">Eskalatsiya ulushi</span><span lang="en">Escalation rate</span></dt><dd>17.2%</dd></div>
-    <div class="kpi"><dt><span lang="uz">Yakuniy model</span><span lang="en">Final model</span></dt><dd>LightGBM</dd></div>
-    <div class="kpi accent"><dt><span lang="uz">Validatsiya ROC-AUC</span><span lang="en">Validation ROC-AUC</span></dt><dd>0.650</dd></div>
+    <div class="kpi"><dt><span lang="uz">Belgilar: yaratilgan / modelda</span><span lang="en">Features: built / used by model</span></dt><dd>626 / 463</dd></div>
+    <div class="kpi"><dt><span lang="uz">Yashirin test ROC-AUC</span><span lang="en">Hidden test ROC-AUC</span></dt><dd class="muted"><span lang="uz">tashkilotchilar baholaydi</span><span lang="en">scored by organizers</span></dd></div>
   </dl>
-  <p class="byline"><span lang="uz">Barcha raqamlar bizning koddan olingan (5 fold × 3 takror CV). Ma'lumotlar sintetik, haqiqiy mijozlar yo'q; saytda xom tranzaksiya yoki signal ID'lari e'lon qilinmagan. Yangilangan: 2026-09-25.</span><span lang="en">Every number comes from our code (5-fold × 3-repeat CV). The data are synthetic, with no real customers; no raw transactions or signal IDs are published here. Updated 2026-09-25.</span></p>
+  <p class="byline"><span lang="uz">Barcha raqamlar bizning koddan olingan. 0.650 — train ma'lumotidagi validatsiya natijasi; yashirin test natijasi bizga ma'lum emas. Ma'lumotlar sintetik, haqiqiy mijozlar yo'q; saytda xom tranzaksiya yoki signal ID'lari e'lon qilinmagan. Yangilangan: 2026-09-25.</span><span lang="en">Every number comes from our code. 0.650 is a validation score on the training data; the hidden test score is not known to us. The data are synthetic, with no real customers; no raw transactions or signal IDs are published here. Updated 2026-09-25.</span></p>
 </section>
 
 <!-- 2. DATASET OVERVIEW -->
@@ -272,9 +284,6 @@
     <li><b class="q"><span lang="uz">Tur, yo&#39;nalish yoki vaqt muhimmi?</span><span lang="en">Do type, direction or time of day matter?</span></b>
       <span lang="uz">Alohida olganda deyarli yo&#39;q. Tungi va dam olish kuni operatsiyalari ham farq qilmaydi.</span><span lang="en">On their own, hardly. Night-time and weekend activity make no difference either.</span><span class="why">type mix Cramér&#39;s V = 0.0035; time-pattern features ΔAUC -0.0003 in ablation.</span></li>
     
-    <li><b class="q"><span lang="uz">Bitta belgi yetadimi?</span><span lang="en">Is one feature enough?</span></b>
-      <span lang="uz">Yo&#39;q. Eng yaxshi bitta belgi AUC 0.574; yuzlab kuchsiz belgilarni birlashtirgan model 0.650 beradi.</span><span lang="en">No. The best single feature reaches AUC 0.574; a model combining hundreds of weak features gets 0.650.</span><span class="why">26 features above 0.55 on their own.</span></li>
-    
   </ol>
 </section>
 
@@ -291,6 +300,19 @@
     <li><b><span lang="uz">ML model</span><span lang="en">ML model</span></b><small>LightGBM</small></li>
     <li><b><span lang="uz">Eskalatsiya ehtimoli</span><span lang="en">Escalation probability</span></b><small>0 … 1</small></li>
   </ol>
+  <div class="text">
+    <h3><span lang="uz">Yakuniy modelga qaysi belgilar kirdi?</span><span lang="en">Which features does the final model use?</span></h3>
+    <p><span lang="uz">626 ta belgi yaratildi, hammasi modelga beriladi; yakuniy LightGBM ulardan 463 tasini haqiqatda ishlatadi (gain &gt; 0), qolgan 163 tasi hech bir bo'linishda tanlanmagan. Eng muhim 20 belgi umumiy gain'ning 35%, eng muhim 100 tasi 70% qismini beradi (15-rasm). Vaqt naqshlari va pass-through guruhlari CV'ni yaxshilamagani uchun umuman yaratilmaydi.</span><span lang="en">We build 626 features and pass all of them to the model; the final LightGBM actually uses 463 (gain &gt; 0), while the other 163 are never picked for a split. The top 20 features carry 35% of the total gain and the top 100 carry 70% (Fig. 15). Time-pattern and pass-through groups did not improve CV, so they are not built at all.</span></p>
+  </div>
+  <div class="wide">
+    <table>
+      <thead><tr><th><span lang="uz">Belgi guruhi</span><span lang="en">Feature group</span></th><th><span lang="uz">Yaratilgan</span><span lang="en">Built</span></th><th><span lang="uz">Modelda ishlatilgan</span><span lang="en">Used by model</span></th><th><span lang="uz">Gain ulushi</span><span lang="en">Share of gain</span></th></tr></thead>
+      <tbody>
+      <tr><td><span lang="uz">Tur va yo&#39;nalish bo&#39;yicha agregatlar</span><span lang="en">Aggregates by type and direction</span></td><td class="n">130</td><td class="n">118</td><td class="n">46%</td></tr><tr><td><span lang="uz">Miqdor gistogrammasi</span><span lang="en">Amount histogram</span></td><td class="n">192</td><td class="n">128</td><td class="n">28%</td></tr><tr><td><span lang="uz">1–90 kunlik oynalar</span><span lang="en">1 to 90-day windows</span></td><td class="n">167</td><td class="n">119</td><td class="n">11%</td></tr><tr><td><span lang="uz">3 daqiqalik portlash</span><span lang="en">3-minute burst</span></td><td class="n">51</td><td class="n">40</td><td class="n">9%</td></tr><tr><td><span lang="uz">Oxirgi 20 tranzaksiya</span><span lang="en">Last 20 transactions</span></td><td class="n">86</td><td class="n">58</td><td class="n">7%</td></tr>
+      <tr class="total"><td><b><span lang="uz">Jami</span><span lang="en">Total</span></b></td><td class="n"><b>626</b></td><td class="n"><b>463</b></td><td class="n"><b>100%</b></td></tr>
+      </tbody>
+    </table>
+  </div>
   <div class="text">
     <p><span lang="uz">Har bir belgi guruhini o'chirib, CV qancha tushishini o'lchadik (musbat = guruh foydali). Foyda bermagan guruhlar olib tashlandi.</span><span lang="en">We switched off one feature group at a time and measured the CV drop (positive = the group helps). Groups that did not help were dropped.</span></p>
   </div>
@@ -332,7 +354,7 @@
     <ul class="models">
       <li><b>Logistic regression</b> — <span lang="uz">baseline (oddiy chiziqli model)</span><span lang="en">baseline (a simple linear model)</span></li>
       <li><b>CatBoost</b>, <b>XGBoost</b> — <span lang="uz">gradient boosting nomzodlari</span><span lang="en">gradient-boosting candidates</span></li>
-      <li><b>LightGBM</b> — <span lang="uz">gradient boosting nomzodi</span><span lang="en">gradient-boosting candidate</span></li>
+      <li><b>LightGBM</b> — <span lang="uz">gradient boosting nomzodi; validatsiyada eng yaxshisi, <b>yakuniy model</b></span><span lang="en">gradient-boosting candidate; best in validation, <b>the final model</b></span></li>
       <li><b>ROC-AUC</b> — <span lang="uz">baholash ko'rsatkichi</span><span lang="en">evaluation metric</span></li>
     </ul>
     <h3><span lang="uz">Validatsiya qanday qurilgan</span><span lang="en">How validation is set up</span></h3>
@@ -352,14 +374,15 @@
   <div class="text">
     <h2><span class="num">7</span><span lang="uz">Model natijalari</span><span lang="en">Model performance</span></h2>
   </div>
+  <p class="callout"><span lang="uz"><b>Bu bo'limdagi barcha raqamlar — validatsiya natijalari.</b> Ular 14 000 ta belgilangan train signalida out-of-fold (OOF) usulida hisoblangan: har bir signalni u o'qitishda qatnashmagan model baholaydi. Yashirin test (6 000 signal) javoblarini biz ko'rmaganmiz; uning ROC-AUC natijasini faqat tashkilotchilar hisoblaydi, va u validatsiyadan farq qilishi mumkin.</span><span lang="en"><b>Every number in this section is a validation result.</b> They are computed out-of-fold (OOF) on the 14 000 labelled training alerts: each alert is scored by a model that did not train on it. We never see the hidden test labels (6 000 alerts); its ROC-AUC is computed only by the organizers and may differ from validation.</span></p>
   <dl class="kpis small">
     <div class="kpi accent"><dt><span lang="uz">Validatsiya ROC-AUC (OOF)</span><span lang="en">Validation ROC-AUC (OOF)</span></dt><dd>0.650</dd></div>
-    <div class="kpi"><dt><span lang="uz">Foldlar bo'yicha</span><span lang="en">Per fold</span></dt><dd>0.648 ± 0.013</dd></div>
-    <div class="kpi"><dt><span lang="uz">Tasodifiy taxmin</span><span lang="en">Random guess</span></dt><dd>0.500</dd></div>
+    <div class="kpi"><dt><span lang="uz">Validatsiya, foldlar bo'yicha</span><span lang="en">Validation, per fold</span></dt><dd>0.648 ± 0.013</dd></div>
+    <div class="kpi"><dt><span lang="uz">Yashirin test ROC-AUC</span><span lang="en">Hidden test ROC-AUC</span></dt><dd class="muted"><span lang="uz">tashkilotchilar baholaydi</span><span lang="en">scored by organizers</span></dd></div>
   </dl>
   <div class="wide">
     <table>
-      <thead><tr><th>Model</th><th><span lang="uz">Fold AUC (o'rtacha ± std)</span><span lang="en">Fold AUC (mean ± std)</span></th><th>OOF AUC</th></tr></thead>
+      <thead><tr><th>Model</th><th><span lang="uz">Validatsiya: fold AUC (o'rtacha ± std)</span><span lang="en">Validation: fold AUC (mean ± std)</span></th><th><span lang="uz">Validatsiya: OOF AUC</span><span lang="en">Validation: OOF AUC</span></th></tr></thead>
       <tbody>
       <tr><td>LightGBM</td><td class="n">0.6479 ± 0.0125</td><td class="n">0.6500</td></tr><tr><td>XGBoost</td><td class="n">0.6477 ± 0.0123</td><td class="n">0.6495</td></tr><tr><td>CatBoost</td><td class="n">0.6409 ± 0.0114</td><td class="n">0.6460</td></tr><tr><td>Logistic regression</td><td class="n">0.6128 ± 0.0126</td><td class="n">0.6169</td></tr><tr><td>Blend (cat 0.29, lgb 0.29, lr 0.14, xgb 0.29)</td><td class="n"></td><td class="n">0.6501</td></tr>
       </tbody>

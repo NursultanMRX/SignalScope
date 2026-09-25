@@ -66,5 +66,25 @@ Statistics: Mann-Whitney U (escalated vs dismissed) with Cliff's δ = 2·AUC −
 
 **Final submission:** LightGBM, 5 seeds, refit on all training rows. OOF AUC 0.650.
 
+All of the above are **validation** numbers (out-of-fold on the 14,000 labelled training alerts). The hidden-test
+ROC-AUC is computed by the organizers only and is not known to us; the website labels the two separately.
+
+**Features used by the final model** (`artifacts/feature_importance.csv`, gain of the full-train refit):
+626 features built and passed to LightGBM, 463 with gain > 0 (163 never used for a split). Top 20 features carry
+35% of total gain, top 100 carry 70%.
+
+| Group | Built | Used (gain > 0) | Share of gain |
+|---|---|---|---|
+| Aggregates by type × direction | 130 | 118 | 46% |
+| Amount histogram (`*_bin#_*`) | 192 | 128 | 28% |
+| 1–90-day windows (`w#_*`, `accel_*`) | 167 | 119 | 11% |
+| 3-minute burst (`b_*`, `br_*`) | 51 | 40 | 9% |
+| Last 20 transactions (`last*`) | 86 | 58 | 7% |
+
+**Submission and notebook check (static, 2026-09-25):** `outputs/team_SSUZ7K.csv` has the right header, 6,000 unique
+`SG_######` ids, values in [0, 1] with 8 decimals, LF line endings, no BOM or quotes; SHA256 `96e74eef…` matches
+`run_manifest.json`. The executed notebook has cells run in order 1–18 with no errors, reports the same CV table,
+writes a CSV with the same SHA256 and ends with `VALIDATION PASS`.
+
 ## 4. Verification checklist (Phase 10)
 Filled in at the end of the run; see the section below.
